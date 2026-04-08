@@ -1,8 +1,11 @@
-import { useState, useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import { getTransactions, saveTransaction, deleteTransaction, type Transaction } from '@/lib/storage';
 
 let listeners: (() => void)[] = [];
+let cachedSnapshot: Transaction[] = getTransactions();
+
 function emitChange() {
+  cachedSnapshot = getTransactions();
   listeners.forEach(l => l());
 }
 
@@ -11,8 +14,12 @@ function subscribe(listener: () => void) {
   return () => { listeners = listeners.filter(l => l !== listener); };
 }
 
+function getSnapshot() {
+  return cachedSnapshot;
+}
+
 export function useTransactions() {
-  const transactions = useSyncExternalStore(subscribe, getTransactions, getTransactions);
+  const transactions = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   const add = useCallback((t: Transaction) => {
     saveTransaction(t);
