@@ -14,7 +14,7 @@ export default function CategoryChart() {
   const { categoryTotals } = useTransactions();
 
   const data = Object.entries(categoryTotals).map(([name, value]) => ({
-    name: CATEGORY_LABELS[name] || name,
+    name: `${getCategoryEmoji(name)} ${name}`,
     value,
   }));
 

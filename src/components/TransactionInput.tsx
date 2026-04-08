@@ -17,8 +17,8 @@ export default function TransactionInput() {
       return;
     }
     add(t);
-    toast.success('✅ Transação registrada!', {
-      description: `${t.tipo === 'receita' ? '+' : '-'} R$ ${t.valor.toFixed(2)} • ${t.categoria}`,
+    toast.success(`Transação registrada em ${t.categoria}`, {
+      description: `${t.tipo === 'receita' ? '+' : '-'} R$ ${t.valor.toFixed(2)}`,
     });
     setText('');
   };

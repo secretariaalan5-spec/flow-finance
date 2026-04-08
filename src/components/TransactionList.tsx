@@ -76,7 +76,7 @@ export default function TransactionList({ limit, showFilters = false }: Props) {
                 className="glass-card p-3 flex items-center gap-3 group"
               >
                 <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-lg">
-                  {CATEGORY_EMOJI[t.categoria] || '📦'}
+                  {getCategoryEmoji(t.categoria)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{t.descricao}</p>
