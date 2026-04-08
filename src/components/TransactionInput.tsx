@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { parseTransaction } from '@/lib/parser';
 import { useTransactions } from '@/hooks/useTransactions';
 import { toast } from 'sonner';
@@ -21,11 +21,6 @@ export default function TransactionInput() {
       description: `${t.tipo === 'receita' ? '+' : '-'} R$ ${t.valor.toFixed(2)} • ${t.categoria}`,
     });
     setText('');
-
-    // Check daily spending warning
-    const today = new Date().toDateString();
-    const { transactions } = useTransactionsSnapshot();
-    // Simple warning handled in dashboard
   };
 
   return (
