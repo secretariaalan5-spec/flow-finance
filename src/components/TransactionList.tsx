@@ -12,11 +12,7 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 }
 
-const CATEGORY_EMOJI: Record<string, string> = {
-  'alimentação': '🍔', 'transporte': '🚗', 'moradia': '🏠', 'saúde': '💊',
-  'educação': '📚', 'lazer': '🎮', 'vestuário': '👕', 'salário': '💰',
-  'investimento': '📈', 'outros': '📦',
-};
+import { getCategoryEmoji } from '@/lib/categories';
 
 interface Props {
   limit?: number;
