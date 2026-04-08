@@ -8,16 +8,7 @@ const COLORS = [
   'hsl(180, 50%, 45%)', 'hsl(30, 70%, 50%)',
 ];
 
-const CATEGORY_LABELS: Record<string, string> = {
-  'alimentação': '🍔 Alimentação',
-  'transporte': '🚗 Transporte',
-  'moradia': '🏠 Moradia',
-  'saúde': '💊 Saúde',
-  'educação': '📚 Educação',
-  'lazer': '🎮 Lazer',
-  'vestuário': '👕 Vestuário',
-  'outros': '📦 Outros',
-};
+import { getCategoryEmoji } from '@/lib/categories';
 
 export default function CategoryChart() {
   const { categoryTotals } = useTransactions();
