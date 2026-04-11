@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Clock, PiggyBank } from 'lucide-react';
+import { LayoutDashboard, Clock, PiggyBank, MessageSquare } from 'lucide-react';
 import BalanceCards from '@/components/BalanceCards';
 import TransactionInput from '@/components/TransactionInput';
 import CategoryChart from '@/components/CategoryChart';
 import TransactionList from '@/components/TransactionList';
+import PiggyChat from '@/components/PiggyChat';
 import logoImg from '@/assets/logo.png';
 
-type Tab = 'dashboard' | 'history';
+type Tab = 'dashboard' | 'history' | 'chat';
 
 export default function Index() {
   const [tab, setTab] = useState<Tab>('dashboard');
@@ -46,7 +47,7 @@ export default function Index() {
                 <TransactionList limit={5} />
               </div>
             </motion.div>
-          ) : (
+          ) : tab === 'history' ? (
             <motion.div
               key="history"
               initial={{ opacity: 0 }}
@@ -56,6 +57,16 @@ export default function Index() {
               <h2 className="font-heading font-bold text-lg mb-4">Histórico</h2>
               <TransactionList showFilters />
             </motion.div>
+          ) : (
+            <motion.div
+              key="chat"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="h-[80vh] -mx-5 -mt-6"
+            >
+              <PiggyChat />
+            </motion.div>
           )}
         </AnimatePresence>
       </main>
@@ -64,6 +75,7 @@ export default function Index() {
       <nav className="fixed bottom-0 left-0 right-0 glass-card border-t border-border/50 px-6 py-3 flex justify-around max-w-lg mx-auto">
         {([
           { id: 'dashboard' as Tab, icon: LayoutDashboard, label: 'Início' },
+          { id: 'chat' as Tab, icon: MessageSquare, label: 'Porquinho' },
           { id: 'history' as Tab, icon: Clock, label: 'Histórico' },
         ]).map(item => (
           <button
