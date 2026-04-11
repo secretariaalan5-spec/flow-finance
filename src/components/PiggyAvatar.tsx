@@ -84,12 +84,12 @@ export default function PiggyAvatar({ mood = "idle", isSpeaking = false, classNa
         <motion.path 
           d="M 35 75 L 20 15 L 85 45 Z" fill="url(#bodyGrad)" 
           animate={mood === 'sad' ? { rotate: -20, y: 10 } : mood === 'happy' ? { rotate: 5, y: -2 } : { rotate: 0 }}
-          originX="85px" originY="45px"
+          style={{ transformOrigin: "85px 45px" }}
         />
         <motion.path 
           d="M 165 75 L 180 15 L 115 45 Z" fill="url(#bodyGrad)"
           animate={mood === 'sad' ? { rotate: 20, y: 10 } : mood === 'happy' ? { rotate: -5, y: -2 } : { rotate: 0 }}
-          originX="115px" originY="45px"
+          style={{ transformOrigin: "115px 45px" }}
         />
 
         {/* Corpo Redondo 3D */}

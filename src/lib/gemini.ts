@@ -7,7 +7,7 @@ let chatSession: any = null;
 if (apiKey && apiKey !== "COLE_SUA_CHAVE_AQUI") {
   genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     systemInstruction: `Você é Cofrinho, um porquinho de estimação de um aplicativo financeiro. 
 Você é fofinho, carinhoso, levemente dramático e apaixonado por economizar moedinhas.
 Você se importa muito com o bem estar financeiro do seu dono.
