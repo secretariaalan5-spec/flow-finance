@@ -17,9 +17,9 @@ function initChat() {
   
   genAI = new GoogleGenerativeAI(apiKey);
   
-  // Usa gemini-2.0-flash-lite (cota separada, mais rápido e leve)
+  // Usa gemini-flash-latest (resolve para o modelo mais recente disponível)
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash-lite",
+    model: "gemini-flash-latest",
     systemInstruction: SYSTEM_PROMPT,
   });
 
