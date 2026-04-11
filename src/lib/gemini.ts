@@ -17,9 +17,9 @@ function initChat() {
   
   genAI = new GoogleGenerativeAI(apiKey);
   
-  // Tenta gemini-2.0-flash, com fallback para gemini-2.0-flash-lite
+  // Usa gemini-2.0-flash-lite (cota separada, mais rápido e leve)
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-2.0-flash-lite",
     systemInstruction: SYSTEM_PROMPT,
   });
 
@@ -71,10 +71,10 @@ async function sendWithRetry(message: string, retries = 2): Promise<string> {
       
       // 404 = Modelo não encontrado
       if (String(statusCode) === "404") {
-        console.warn("🐷 Modelo não encontrado, tentando fallback...");
+        console.warn("🐷 Modelo não encontrado, tentando fallback gemini-2.0-flash...");
         try {
           const fallbackModel = genAI!.getGenerativeModel({ 
-            model: "gemini-2.0-flash-lite",
+            model: "gemini-2.0-flash",
             systemInstruction: SYSTEM_PROMPT 
           });
           const fallbackChat = fallbackModel.startChat({});
