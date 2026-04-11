@@ -1,10 +1,40 @@
 // Serviço centralizado de Voz — TTS (falar) e STT (ouvir)
-// Resolve o bug do Chrome onde getVoices() retorna vazio na 1ª chamada
+// Usa vozes femininas naturais do sistema com fallback inteligente
 
 let voicesLoaded = false;
 let cachedVoice: SpeechSynthesisVoice | null = null;
 
-// Pré-carrega vozes assim que possível
+/**
+ * Ranqueia vozes por qualidade para o Porquinho.
+ * Prioridade: Microsoft Francisca (pt-BR natural) > Google pt-BR > qualquer pt-BR feminina > fallback
+ */
+function rankVoice(v: SpeechSynthesisVoice): number {
+  const name = v.name.toLowerCase();
+  const lang = v.lang.toLowerCase();
+  
+  if (!lang.includes("pt")) return 0;
+  
+  let score = 1;
+  
+  // Vozes naturais do Microsoft Edge/Windows (soam MUITO melhores)
+  if (name.includes("francisca")) score += 100; // Francisca pt-BR é a mais natural
+  if (name.includes("thalita")) score += 90;
+  if (name.includes("leila")) score += 80;
+  if (name.includes("microsoft") && name.includes("online")) score += 50; // Online = Neural
+  if (name.includes("microsoft")) score += 30;
+  
+  // Vozes Google (razoáveis)
+  if (name.includes("google") && lang.includes("pt-br")) score += 40;
+  
+  // pt-BR > pt-PT
+  if (lang.includes("pt-br")) score += 10;
+  
+  // Vozes femininas soam mais fofinhas
+  if (name.includes("female") || name.includes("feminino")) score += 5;
+  
+  return score;
+}
+
 function preloadVoices(): Promise<void> {
   return new Promise((resolve) => {
     if (voicesLoaded) { resolve(); return; }
@@ -12,12 +42,17 @@ function preloadVoices(): Promise<void> {
     const tryLoad = () => {
       const voices = window.speechSynthesis.getVoices();
       if (voices.length > 0) {
-        // Prioridade: Google pt-BR > qualquer pt-BR > qualquer pt > default
-        cachedVoice = voices.find(v => v.lang.includes("pt-BR") && v.name.includes("Google"))
-          || voices.find(v => v.lang.includes("pt-BR"))
-          || voices.find(v => v.lang.startsWith("pt"))
-          || voices[0];
+        // Ranquear e pegar a melhor voz
+        const ranked = voices
+          .map(v => ({ voice: v, score: rankVoice(v) }))
+          .filter(v => v.score > 0)
+          .sort((a, b) => b.score - a.score);
+        
+        cachedVoice = ranked.length > 0 ? ranked[0].voice : voices[0];
         voicesLoaded = true;
+        
+        // Debug: mostrar voz escolhida
+        console.log("🐷 Voz do Porquinho:", cachedVoice?.name, cachedVoice?.lang);
         resolve();
       }
     };
@@ -28,7 +63,6 @@ function preloadVoices(): Promise<void> {
         tryLoad();
         resolve();
       };
-      // Timeout fallback — se após 2s as vozes não carregaram, segue sem
       setTimeout(() => { voicesLoaded = true; resolve(); }, 2000);
     }
   });
@@ -46,7 +80,7 @@ export type SpeakCallbacks = {
 
 /**
  * Faz o Porquinho falar um texto em voz alta.
- * Pitch 1.6 para voz aguda/fofa. Rate 1.1 para falar um pouco mais rápido.
+ * Usa pitch e rate otimizados para soar fofo sem ficar robótico.
  */
 export async function speakPiggy(text: string, callbacks?: SpeakCallbacks): Promise<void> {
   if (!("speechSynthesis" in window)) return;
@@ -62,8 +96,12 @@ export async function speakPiggy(text: string, callbacks?: SpeakCallbacks): Prom
   const utterance = new SpeechSynthesisUtterance(cleanText);
   utterance.lang = "pt-BR";
   if (cachedVoice) utterance.voice = cachedVoice;
-  utterance.pitch = 1.6;
-  utterance.rate = 1.1;
+  
+  // Ajustes para voz fofa e natural:
+  // - Pitch 1.35: aguda o suficiente para ser fofa, sem ficar robótica
+  // - Rate 0.95: um pouquinho mais lento para parecer "meiga"
+  utterance.pitch = 1.35;
+  utterance.rate = 0.95;
 
   utterance.onstart = () => callbacks?.onStart?.();
   utterance.onend = () => callbacks?.onEnd?.();
