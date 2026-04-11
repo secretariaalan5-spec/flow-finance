@@ -80,15 +80,19 @@ export type SpeakCallbacks = {
 
 /**
  * Faz o Porquinho falar um texto em voz alta.
- * Usa pitch e rate otimizados para soar fofo sem ficar robótico.
+ * Pitch alto + rate lento = voz fofa e meiga de porquinho.
  */
 export async function speakPiggy(text: string, callbacks?: SpeakCallbacks): Promise<void> {
   if (!("speechSynthesis" in window)) return;
   
   await preloadVoices();
   
-  // Limpa emojis que a voz não sabe ler
-  const cleanText = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "").trim();
+  // Limpa emojis e caracteres especiais que a voz não sabe ler
+  const cleanText = text
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE00}-\u{FE0F}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu, "")
+    .replace(/[✅💸💰🐷🪙🥺🥳😱😰🤔✨🎉💕💊📝]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!cleanText) return;
 
   window.speechSynthesis.cancel();
@@ -97,11 +101,13 @@ export async function speakPiggy(text: string, callbacks?: SpeakCallbacks): Prom
   utterance.lang = "pt-BR";
   if (cachedVoice) utterance.voice = cachedVoice;
   
-  // Ajustes para voz fofa e natural:
-  // - Pitch 1.35: aguda o suficiente para ser fofa, sem ficar robótica
-  // - Rate 0.95: um pouquinho mais lento para parecer "meiga"
-  utterance.pitch = 1.35;
-  utterance.rate = 0.95;
+  // Voz fofa de porquinho:
+  // - Pitch 1.5: aguda e fofinha (feminina/infantil)
+  // - Rate 0.88: fala devagar e com carinho, mais "meiga"
+  // - Volume 1.0: alto e claro
+  utterance.pitch = 1.5;
+  utterance.rate = 0.88;
+  utterance.volume = 1.0;
 
   utterance.onstart = () => callbacks?.onStart?.();
   utterance.onend = () => callbacks?.onEnd?.();
