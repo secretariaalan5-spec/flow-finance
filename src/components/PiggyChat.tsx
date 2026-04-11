@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic } from "lucide-react";
+import { Send, Mic, MicOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { sendMessageToPiggy } from "@/lib/gemini";
+import { speakPiggy, stopSpeaking, startListening, isSTTSupported } from "@/lib/speech";
 import PiggyAvatar, { PiggyMood } from "./PiggyAvatar";
 
 type Message = {
@@ -27,55 +28,33 @@ export default function PiggyChat() {
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
+
+  // Cleanup: parar voz ao desmontar
+  useEffect(() => {
+    return () => stopSpeaking();
+  }, []);
   
   const handleMicrophone = () => {
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Seu navegador não suporta reconhecimento de voz.");
+    if (isListening) return;
+
+    if (!isSTTSupported()) {
+      alert("Seu navegador não suporta reconhecimento de voz. Use Chrome ou Edge.");
       return;
     }
     
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'pt-BR';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => setIsListening(true);
-    
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(transcript);
-      // Auto-send upon finishing speech:
-      setTimeout(() => {
-         const btn = document.getElementById("btn-send-piggy");
-         if(btn) btn.click();
-      }, 500);
-    };
-
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
-
-    recognition.start();
-  };
-  
-  const speakPiggy = (text: string) => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "pt-BR";
-      // Tentar usar uma voz mais aguda (fina) no Chrome se possivel
-      const voices = window.speechSynthesis.getVoices();
-      const brVoice = voices.find(v => v.lang.includes("pt-BR") && v.name.includes("Google"));
-      if (brVoice) utterance.voice = brVoice;
-      utterance.pitch = 1.6; // Voz fina de porquinho
-      utterance.rate = 1.1; // Fala mais rápido
-      
-      utterance.onstart = () => setIsSpeakingOutLoud(true);
-      utterance.onend = () => setIsSpeakingOutLoud(false);
-      utterance.onerror = () => setIsSpeakingOutLoud(false);
-
-      window.speechSynthesis.speak(utterance);
-    }
+    startListening({
+      onStart: () => setIsListening(true),
+      onResult: (transcript) => {
+        setInput(transcript);
+        // Auto-enviar após captar a fala
+        setTimeout(() => {
+          const btn = document.getElementById("btn-send-piggy");
+          if (btn) btn.click();
+        }, 500);
+      },
+      onEnd: () => setIsListening(false),
+      onError: () => setIsListening(false),
+    });
   };
 
   const handleSend = async () => {
@@ -98,7 +77,11 @@ export default function PiggyChat() {
       { id: (Date.now() + 1).toString(), role: "piggy", text: piggyResponse },
     ]);
     
-    speakPiggy(piggyResponse.replace(/🐷|🪙|🥺|🥳/g, '')); // Remover emojis antes de falar
+    // Falar a resposta usando o serviço centralizado
+    speakPiggy(piggyResponse, {
+      onStart: () => setIsSpeakingOutLoud(true),
+      onEnd: () => setIsSpeakingOutLoud(false),
+    });
   };
 
   return (
@@ -116,7 +99,9 @@ export default function PiggyChat() {
           />
           <div className="mt-1 flex flex-col items-center bg-background/80 backdrop-blur-md px-4 py-1 rounded-full shadow-sm border border-border/30">
             <h2 className="font-heading font-bold text-lg text-foreground leading-tight">Cofrinho</h2>
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">{isTyping ? "Pensando..." : "Seu Pet Financeiro 🐷"}</p>
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+              {isListening ? "🎤 Ouvindo..." : isTyping ? "Pensando..." : isSpeakingOutLoud ? "🔊 Falando..." : "Seu Pet Financeiro 🐷"}
+            </p>
           </div>
         </div>
       </div>
@@ -165,7 +150,7 @@ export default function PiggyChat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder={isListening ? "Ouvindo... Fale agora!" : "Fale com o Cofrinho..."}
+            placeholder={isListening ? "🎤 Ouvindo... Fale agora!" : "Fale com o Cofrinho..."}
             className={`flex-1 bg-muted/30 text-foreground placeholder-muted-foreground rounded-full pl-4 pr-24 py-3 text-sm outline-none border transition-all shadow-sm ${isListening ? 'border-red-500 bg-red-500/10' : 'border-border/50 focus:border-primary/50'}`}
           />
           <div className="absolute right-1 top-1 flex gap-1">
@@ -173,7 +158,7 @@ export default function PiggyChat() {
               onClick={handleMicrophone}
               className={`p-2 rounded-full transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-muted text-muted-foreground hover:bg-muted/80'}`}
             >
-              <Mic className="w-4 h-4" />
+              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </button>
             <button
               id="btn-send-piggy"

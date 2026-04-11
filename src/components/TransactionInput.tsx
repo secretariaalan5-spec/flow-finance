@@ -2,13 +2,17 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { parseTransaction } from '@/lib/parser';
 import { useTransactions } from '@/hooks/useTransactions';
-import { toast } from 'sonner';
-import { Mic, Send, MessageSquareText } from 'lucide-react';
+import { Mic, MicOff, Send } from 'lucide-react';
 import { sendProactiveSystemMessage } from '@/lib/gemini';
+import { startListening, isSTTSupported } from '@/lib/speech';
+import { recordTransaction } from '@/lib/piggyState';
+import { usePiggyPopup } from './PiggyPopup';
 
 export default function TransactionInput() {
   const [text, setText] = useState('');
+  const [isListening, setIsListening] = useState(false);
   const { add } = useTransactions();
+  const piggyPopup = usePiggyPopup();
 
   const handleShortcut = (shortcutText: string) => {
     setText(shortcutText);
@@ -18,32 +22,53 @@ export default function TransactionInput() {
     }, 100);
   };
 
+  const handleMicrophone = () => {
+    if (isListening) return;
+
+    if (!isSTTSupported()) {
+      piggyPopup.show("Seu navegador não suporta voz! Use o Chrome 🐷", "sad");
+      return;
+    }
+
+    startListening({
+      onStart: () => setIsListening(true),
+      onResult: (transcript) => {
+        setText(transcript);
+        // Auto-enviar após captar a fala
+        setTimeout(() => {
+          const btn = document.getElementById("btn-send-tx");
+          if (btn) btn.click();
+        }, 400);
+      },
+      onEnd: () => setIsListening(false),
+      onError: () => {
+        setIsListening(false);
+        piggyPopup.show("Não consegui ouvir... Tenta de novo? 🐷", "sad", false);
+      },
+    });
+  };
+
   const handleSubmit = () => {
     if (!text.trim()) return;
     const t = parseTransaction(text);
     if (!t) {
-      toast.error('Não consegui entender. Tente: "gastei 25 com mercado"');
+      piggyPopup.show('Não entendi... Tenta assim: "gastei 25 com mercado" 🐷', "surprised");
       return;
     }
     add(t);
-    toast.success(`Transação registrada em ${t.categoria}`, {
-      description: `${t.tipo === 'receita' ? '+' : '-'} R$ ${t.valor.toFixed(2)}`,
-    });
+    recordTransaction();
     
-    // Proactive response from Piggy AI
-    const rawText = text; // Captura para nao limpar logo após
+    // Proactive response from Piggy AI via Popup
+    const rawText = text;
     setText('');
     
     setTimeout(async () => {
       const reaction = await sendProactiveSystemMessage(`O usuário registrou: ${rawText}`);
       if (reaction) {
-        toast("Oinc! 🐷", {
-          description: reaction,
-          icon: <MessageSquareText className="w-4 h-4" />,
-          duration: 5000,
-        });
+        const mood = t.tipo === 'receita' ? 'happy' : 'sad';
+        piggyPopup.show(reaction, mood);
       }
-    }, 1500); // 1.5 seconds delay just to feel natural
+    }, 1000);
   };
 
   return (
@@ -67,6 +92,12 @@ export default function TransactionInput() {
           🚗 Uber R$15
         </button>
         <button 
+          onClick={() => handleShortcut("gastei 8 com café")}
+          className="whitespace-nowrap px-3 py-1.5 bg-muted/60 hover:bg-primary/20 text-foreground text-xs font-medium rounded-full border border-border/50 transition-colors flex items-center gap-1"
+        >
+          ☕ Café R$8
+        </button>
+        <button 
           onClick={() => handleShortcut("recebi 100 de pix")}
           className="whitespace-nowrap px-3 py-1.5 bg-muted/60 hover:bg-green-500/20 text-green-400 text-xs font-medium rounded-full border border-border/50 transition-colors flex items-center gap-1"
         >
@@ -80,22 +111,24 @@ export default function TransactionInput() {
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          placeholder='Ex: gastei 25 com mercado'
-          className="flex-1 bg-muted/30 text-foreground placeholder-muted-foreground rounded-full pl-4 pr-12 py-3 text-sm outline-none border border-border/50 focus:border-primary/50 transition-all shadow-sm"
+          placeholder={isListening ? '🎤 Ouvindo... Fale agora!' : 'Ex: gastei 25 com mercado'}
+          className={`flex-1 bg-muted/30 text-foreground placeholder-muted-foreground rounded-full pl-4 pr-24 py-3 text-sm outline-none border transition-all shadow-sm ${isListening ? 'border-red-500 bg-red-500/10 animate-pulse' : 'border-border/50 focus:border-primary/50'}`}
         />
-        <button
-          onClick={() => toast.info('🎤 Use a aba do Porquinho para falar!')}
-          className="absolute right-12 top-1 p-2 rounded-full text-muted-foreground hover:bg-muted/80 transition-colors"
-        >
-          <Mic className="w-4 h-4" />
-        </button>
-        <button
-          id="btn-send-tx"
-          onClick={handleSubmit}
-          className="absolute right-1 top-1 p-2 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-        >
-          <Send className="w-4 h-4 ml-0.5" />
-        </button>
+        <div className="absolute right-1 top-1 flex gap-1">
+          <button
+            onClick={handleMicrophone}
+            className={`p-2 rounded-full transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-muted-foreground hover:bg-muted/80'}`}
+          >
+            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+          </button>
+          <button
+            id="btn-send-tx"
+            onClick={handleSubmit}
+            className="p-2 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            <Send className="w-4 h-4 ml-0.5" />
+          </button>
+        </div>
       </div>
     </motion.div>
   );
