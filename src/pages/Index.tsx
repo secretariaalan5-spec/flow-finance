@@ -8,9 +8,12 @@ import CategoryChart from '@/components/CategoryChart';
 import TransactionList from '@/components/TransactionList';
 import PiggyChat from '@/components/PiggyChat';
 import PiggyAvatar, { PiggyMood } from '@/components/PiggyAvatar';
+import AlertsScreen from '@/components/AlertsScreen';
+import PullToRefresh from '@/components/PullToRefresh';
 import { useTransactions } from '@/hooks/useTransactions';
 import { usePiggyPopup } from '@/components/PiggyPopup';
 import { usePiggyEffects } from '@/components/PiggyEffects';
+import { haptic } from '@/lib/haptics';
 import {
   getInactivityMessage,
   recordVisit,
@@ -22,7 +25,7 @@ import {
 } from '@/lib/piggyState';
 import { sendFinancialAnalysis, sendWeeklySummary } from '@/lib/gemini';
 
-type Tab = 'dashboard' | 'history' | 'chat';
+type Tab = 'dashboard' | 'history' | 'chat' | 'alerts';
 
 export default function Index() {
   const [tab, setTab] = useState<Tab>('dashboard');
