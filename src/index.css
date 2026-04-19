@@ -4,12 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== QUIET WEALTH — Design System ===== */
-/* Paleta: verde escuro elegante, off-white, dourado sutil */
+/* ===== QUIET WEALTH — Mobile Native Dark Theme ===== */
 
 @layer base {
   :root {
-    /* Light (não usado por padrão, fallback) */
     --background: 60 20% 97%;
     --foreground: 150 30% 10%;
     --card: 0 0% 100%;
@@ -37,75 +35,122 @@
   }
 
   .dark {
-    /* === DARK PRINCIPAL — Quiet Wealth === */
-    --background: 150 20% 8%;       /* verde quase preto */
-    --foreground: 60 15% 92%;       /* off-white quente */
-    --card: 150 18% 11%;            /* card escuro com toque verde */
-    --card-foreground: 60 15% 92%;
-    --popover: 150 18% 12%;
-    --popover-foreground: 60 15% 92%;
-    --primary: 145 45% 38%;         /* verde sage rico */
-    --primary-foreground: 60 20% 97%;
-    --secondary: 150 15% 16%;
-    --secondary-foreground: 60 15% 88%;
-    --muted: 150 12% 14%;
-    --muted-foreground: 60 8% 60%;
-    --accent: 42 50% 58%;           /* dourado sutil */
-    --accent-foreground: 150 30% 10%;
-    --destructive: 8 65% 52%;
+    /* Tema escuro nativo: verde-petróleo profundo, contraste suave */
+    --background: 155 25% 5%;          /* fundo deep — quase preto verde */
+    --surface: 155 22% 8%;             /* superfície base */
+    --foreground: 60 20% 95%;          /* off-white quente */
+    --card: 155 18% 10%;               /* cards elevados */
+    --card-elevated: 155 16% 13%;      /* cards mais altos */
+    --card-foreground: 60 20% 95%;
+    --popover: 155 20% 11%;
+    --popover-foreground: 60 20% 95%;
+    --primary: 145 55% 48%;            /* verde sage vivo (acento) */
+    --primary-foreground: 155 30% 6%;
+    --secondary: 155 15% 14%;
+    --secondary-foreground: 60 15% 90%;
+    --muted: 155 12% 12%;
+    --muted-foreground: 60 8% 58%;
+    --accent: 42 70% 65%;              /* dourado suave */
+    --accent-foreground: 155 30% 8%;
+    --destructive: 8 70% 58%;
     --destructive-foreground: 0 0% 100%;
-    --border: 150 12% 18%;
-    --input: 150 12% 16%;
-    --ring: 145 45% 38%;
+    --border: 155 15% 16%;
+    --input: 155 15% 14%;
+    --ring: 145 55% 48%;
     --radius: 1.5rem;
-    --income: 145 50% 45%;
-    --expense: 8 65% 58%;
-    --warning: 35 75% 55%;
-    --gold: 42 60% 62%;
+    --income: 145 55% 52%;
+    --expense: 8 65% 60%;
+    --warning: 35 75% 60%;
+    --gold: 42 70% 65%;
   }
 }
 
 @layer base {
   * { @apply border-border; }
+
+  html, body, #root {
+    height: 100%;
+    overflow: hidden;
+  }
+
   body {
     @apply bg-background text-foreground font-body antialiased;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    overscroll-behavior-y: none;
+    overscroll-behavior: none;
     touch-action: pan-x pan-y;
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
     background-image:
-      radial-gradient(circle at 20% 0%, hsl(145 45% 38% / 0.08), transparent 50%),
-      radial-gradient(circle at 80% 100%, hsl(42 50% 58% / 0.05), transparent 50%);
+      radial-gradient(circle at 15% -10%, hsl(145 55% 48% / 0.10), transparent 45%),
+      radial-gradient(circle at 90% 110%, hsl(42 70% 65% / 0.06), transparent 45%);
+    background-attachment: fixed;
   }
+
   input, textarea, [contenteditable] {
     -webkit-user-select: text;
     user-select: text;
   }
+
   html { @apply dark; }
   h1, h2, h3, h4, h5, h6 { @apply font-heading; }
+
+  /* Safe area helpers */
+  .safe-top { padding-top: max(env(safe-area-inset-top), 1rem); }
+  .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 1rem); }
+  .safe-x {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
 }
 
 @layer utilities {
-  .glass-card {
-    @apply bg-card/70 backdrop-blur-2xl border border-border/40 rounded-3xl;
-    box-shadow: 0 8px 32px -8px hsl(150 30% 4% / 0.4);
-  }
+  /* Cards com profundidade real */
   .quiet-card {
-    @apply bg-card border border-border/30 rounded-3xl;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border) / 0.6);
+    border-radius: 1.5rem;
     box-shadow:
-      0 1px 0 0 hsl(60 15% 92% / 0.03) inset,
-      0 8px 24px -12px hsl(150 30% 4% / 0.5);
+      0 1px 0 0 hsl(0 0% 100% / 0.04) inset,
+      0 0 0 1px hsl(0 0% 0% / 0.2),
+      0 12px 32px -16px hsl(155 50% 2% / 0.7);
   }
+
+  .elevated-card {
+    background: hsl(var(--card-elevated));
+    border: 1px solid hsl(var(--border) / 0.5);
+    border-radius: 1.75rem;
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.05) inset,
+      0 20px 40px -20px hsl(155 50% 2% / 0.8);
+  }
+
+  .glass-nav {
+    background: hsl(var(--card) / 0.75);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.04) inset,
+      0 -8px 32px -8px hsl(155 50% 2% / 0.6);
+  }
+
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(150 45% 28%) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(150 50% 38%) 100%);
   }
+
+  .gradient-hero {
+    background:
+      radial-gradient(circle at 0% 0%, hsl(145 55% 48% / 0.18), transparent 60%),
+      linear-gradient(160deg, hsl(155 25% 9%) 0%, hsl(155 22% 7%) 100%);
+  }
+
   .gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(38 55% 50%) 100%);
+    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(38 65% 55%) 100%);
   }
+
   .text-gold { color: hsl(var(--gold)); }
+
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -114,4 +159,28 @@
     font-feature-settings: 'tnum';
     letter-spacing: -0.02em;
   }
+
+  /* Scroll container interno (substitui o body scroll) */
+  .app-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  /* Ripple/tap feedback para sentir nativo */
+  .tap-scale {
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .tap-scale:active {
+    transform: scale(0.96);
+    opacity: 0.85;
+  }
+
+  /* Haptic-like pull animation */
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
+    50% { box-shadow: 0 0 0 12px hsl(var(--primary) / 0); }
+  }
+  .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 }
