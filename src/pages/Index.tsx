@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Clock, Sparkles, Plus, Bell, Sun, Moon } from 'lucide-react';
+import { Home, Clock, Sparkles, Plus, Bell, Sun, Moon, LogOut } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
+import { useAuth } from '@/lib/auth';
 import BalanceCards from '@/components/BalanceCards';
 import TransactionInput from '@/components/TransactionInput';
 import CategoryChart from '@/components/CategoryChart';
@@ -35,6 +36,7 @@ export default function Index() {
   const piggyEffects = usePiggyEffects();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { theme, toggle: toggleTheme } = useTheme();
+  const { signOut, user } = useAuth();
   const prevTxCountRef = useRef(transactions.length);
   const prevBalanceRef = useRef(balance);
   const bootedRef = useRef(false);
@@ -144,17 +146,27 @@ export default function Index() {
             </div>
           </button>
 
-          <button
-            onClick={toggleTheme}
-            aria-label="Alternar tema"
-            className="w-11 h-11 rounded-full bg-card border border-border/50 flex items-center justify-center tap-scale relative overflow-hidden"
-          >
-            {theme === 'dark' ? (
-              <Sun className="w-4 h-4 text-accent" />
-            ) : (
-              <Moon className="w-4 h-4 text-primary" />
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              aria-label="Alternar tema"
+              className="w-10 h-10 rounded-full bg-card border border-border/50 flex items-center justify-center tap-scale relative overflow-hidden"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-4 h-4 text-accent" />
+              ) : (
+                <Moon className="w-4 h-4 text-primary" />
+              )}
+            </button>
+            <button
+              onClick={() => signOut()}
+              aria-label="Sair"
+              title={`Sair (${user?.email})`}
+              className="w-10 h-10 rounded-full bg-card border border-border/50 flex items-center justify-center tap-scale relative overflow-hidden"
+            >
+              <LogOut className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
         </header>
       )}
 

@@ -1,43 +1,237 @@
-import { useCallback, useSyncExternalStore } from 'react';
-import { getTransactions, saveTransaction, deleteTransaction, type Transaction } from '@/lib/storage';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth';
+import { enqueue, getQueue, dequeue, PendingTransaction } from '@/lib/offlineQueue';
 
-let listeners: (() => void)[] = [];
-let cachedSnapshot: Transaction[] = getTransactions();
+// Unique ID per hook instance (avoids Supabase channel name collision in StrictMode)
+let channelCounter = 0;
 
-function emitChange() {
-  cachedSnapshot = getTransactions();
-  listeners.forEach(l => l());
+export interface Transaction {
+  id: string;
+  user_id: string;
+  tipo: 'receita' | 'despesa';
+  valor: number;
+  categoria: string;
+  descricao: string;
+  data: string;
+  created_at: string;
+  _pending?: boolean; // transação local ainda não sincronizada
 }
 
-function subscribe(listener: () => void) {
-  listeners = [...listeners, listener];
-  return () => { listeners = listeners.filter(l => l !== listener); };
+export interface NewTransaction {
+  tipo: 'receita' | 'despesa';
+  valor: number;
+  categoria: string;
+  descricao?: string;
+  data?: string;
 }
 
-function getSnapshot() {
-  return cachedSnapshot;
+function generateLocalId() {
+  return `local_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
 export function useTransactions() {
-  const transactions = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const { user } = useAuth();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const channelIdRef = useRef(`tx-${++channelCounter}`);
 
-  const add = useCallback((t: Transaction) => {
-    saveTransaction(t);
-    emitChange();
+  // ─── Fetch do Supabase ───────────────────────────────────────────────────────
+  const fetchTransactions = useCallback(async () => {
+    if (!user) { setTransactions([]); setLoading(false); return; }
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('data', { ascending: false });
+
+    if (!error && data) {
+      // Mescla remotas com pendentes locais que ainda não foram confirmadas
+      const pending = await getQueue();
+      const pendingTx: Transaction[] = pending
+        .filter(p => p.action === 'insert' && p.user_id === user.id)
+        .map(p => ({
+          id: p.localId,
+          user_id: p.user_id,
+          tipo: p.tipo,
+          valor: p.valor,
+          categoria: p.categoria,
+          descricao: p.descricao,
+          data: p.data,
+          created_at: p.created_at,
+          _pending: true,
+        }));
+
+      // Remove duplicatas (localId pode ter sido confirmado)
+      const remoteIds = new Set((data as Transaction[]).map(t => t.id));
+      const stillPending = pendingTx.filter(p => !remoteIds.has(p.id));
+
+      setTransactions([...stillPending, ...(data as Transaction[])]);
+    }
+    setLoading(false);
+  }, [user]);
+
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
+
+  // ─── Realtime subscription ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    const channelName = channelIdRef.current;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transactions', filter: `user_id=eq.${user.id}` },
+        () => fetchTransactions()
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchTransactions]);
+
+  // ─── Sincronização automática quando voltar online ───────────────────────────
+  const syncQueue = useCallback(async () => {
+    if (!user || !navigator.onLine) return;
+    const pending = await getQueue();
+    if (pending.length === 0) return;
+
+    for (const item of pending) {
+      try {
+        if (item.action === 'insert') {
+          const { error } = await supabase.from('transactions').insert({
+            tipo: item.tipo,
+            valor: item.valor,
+            categoria: item.categoria,
+            descricao: item.descricao,
+            data: item.data,
+            user_id: item.user_id,
+          });
+          if (!error) await dequeue(item.localId);
+        } else if (item.action === 'delete' && item.remoteId) {
+          const { error } = await supabase.from('transactions').delete().eq('id', item.remoteId);
+          if (!error) await dequeue(item.localId);
+        }
+      } catch {
+        // Mantém na fila para próxima tentativa
+      }
+    }
+    fetchTransactions();
+  }, [user, fetchTransactions]);
+
+  useEffect(() => {
+    // Sincroniza quando reconectar
+    window.addEventListener('online', syncQueue);
+    // Também tenta ao montar (caso tenha pendências de sessões anteriores)
+    syncQueue();
+    return () => window.removeEventListener('online', syncQueue);
+  }, [syncQueue]);
+
+  // ─── Adicionar transação ─────────────────────────────────────────────────────
+  const add = useCallback(async (t: NewTransaction) => {
+    if (!user) return;
+
+    const now = new Date().toISOString();
+    const localId = generateLocalId();
+
+    // Otimistic update imediato
+    const optimistic: Transaction = {
+      id: localId,
+      user_id: user.id,
+      tipo: t.tipo,
+      valor: t.valor,
+      categoria: t.categoria,
+      descricao: t.descricao ?? '',
+      data: t.data ?? now,
+      created_at: now,
+      _pending: !navigator.onLine,
+    };
+    setTransactions(prev => [optimistic, ...prev]);
+
+    if (!navigator.onLine) {
+      // Guarda na fila offline
+      const pending: PendingTransaction = {
+        localId,
+        user_id: user.id,
+        tipo: t.tipo,
+        valor: t.valor,
+        categoria: t.categoria,
+        descricao: t.descricao ?? '',
+        data: t.data ?? now,
+        created_at: now,
+        action: 'insert',
+      };
+      await enqueue(pending);
+      return;
+    }
+
+    // Online: salva no Supabase
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert({ ...t, user_id: user.id })
+      .select()
+      .single();
+
+    if (!error && data) {
+      // Substitui o otimístico pelo confirmado
+      setTransactions(prev => prev.map(tx => tx.id === localId ? (data as Transaction) : tx));
+    } else {
+      // Falhou mesmo online — move para fila
+      const pending: PendingTransaction = {
+        localId,
+        user_id: user.id,
+        tipo: t.tipo,
+        valor: t.valor,
+        categoria: t.categoria,
+        descricao: t.descricao ?? '',
+        data: t.data ?? now,
+        created_at: now,
+        action: 'insert',
+      };
+      await enqueue(pending);
+    }
+  }, [user]);
+
+  // ─── Remover transação ───────────────────────────────────────────────────────
+  const remove = useCallback(async (id: string) => {
+    // Remove visualmente imediatamente
+    setTransactions(prev => prev.filter(t => t.id !== id));
+
+    // Se era uma transação local pendente, remove da fila
+    if (id.startsWith('local_')) {
+      await dequeue(id);
+      return;
+    }
+
+    if (!navigator.onLine) {
+      // Guarda delete para sincronizar depois
+      await enqueue({
+        localId: generateLocalId(),
+        user_id: '',
+        tipo: 'despesa',
+        valor: 0,
+        categoria: '',
+        descricao: '',
+        data: '',
+        created_at: '',
+        action: 'delete',
+        remoteId: id,
+      });
+      return;
+    }
+
+    await supabase.from('transactions').delete().eq('id', id);
   }, []);
 
-  const remove = useCallback((id: string) => {
-    deleteTransaction(id);
-    emitChange();
-  }, []);
-
+  // ─── Cálculos do mês atual ───────────────────────────────────────────────────
   const now = new Date();
   const currentMonth = transactions.filter(t => {
     const d = new Date(t.data);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
 
-  const totalIncome = currentMonth.filter(t => t.tipo === 'receita').reduce((s, t) => s + t.valor, 0);
+  const totalIncome  = currentMonth.filter(t => t.tipo === 'receita').reduce((s, t) => s + t.valor, 0);
   const totalExpense = currentMonth.filter(t => t.tipo === 'despesa').reduce((s, t) => s + t.valor, 0);
   const balance = totalIncome - totalExpense;
 
@@ -48,5 +242,5 @@ export function useTransactions() {
       return acc;
     }, {});
 
-  return { transactions, currentMonth, add, remove, totalIncome, totalExpense, balance, categoryTotals };
+  return { transactions, currentMonth, loading, add, remove, totalIncome, totalExpense, balance, categoryTotals, refetch: fetchTransactions };
 }

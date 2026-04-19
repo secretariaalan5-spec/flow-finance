@@ -1,5 +1,4 @@
-import type { Transaction } from './storage';
-import { generateId } from './storage';
+import type { NewTransaction } from '@/hooks/useTransactions';
 import { detectCategory } from './categories';
 
 function extractValue(text: string): number | null {
@@ -15,7 +14,7 @@ function detectType(text: string): 'receita' | 'despesa' {
   return 'despesa';
 }
 
-export function parseTransaction(text: string): Transaction | null {
+export function parseTransaction(text: string): NewTransaction | null {
   const valor = extractValue(text);
   if (!valor || valor <= 0) return null;
 
@@ -23,12 +22,10 @@ export function parseTransaction(text: string): Transaction | null {
   const categoria = detectCategory(text, tipo);
 
   return {
-    id: generateId(),
     tipo,
     valor,
     categoria,
     descricao: text.trim(),
     data: new Date().toISOString(),
-    synced: false,
   };
 }
