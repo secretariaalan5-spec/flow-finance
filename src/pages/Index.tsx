@@ -283,18 +283,18 @@ export default function Index() {
             icon={Home}
             label="Início"
             active={tab === 'dashboard'}
-            onClick={() => setTab('dashboard')}
+            onClick={() => { haptic('light'); setTab('dashboard'); }}
           />
           <NavBtn
             icon={Clock}
             label="Histórico"
             active={tab === 'history'}
-            onClick={() => setTab('history')}
+            onClick={() => { haptic('light'); setTab('history'); }}
           />
 
           {/* FAB CENTRAL */}
           <button
-            onClick={() => setShowQuickAdd(true)}
+            onClick={() => { haptic('medium'); setShowQuickAdd(true); }}
             className="-mt-7 w-14 h-14 rounded-full gradient-primary text-primary-foreground flex items-center justify-center shadow-2xl shadow-primary/40 tap-scale border-4 border-background"
             aria-label="Adicionar transação"
           >
@@ -305,13 +305,13 @@ export default function Index() {
             icon={Sparkles}
             label="Cofrinho"
             active={tab === 'chat'}
-            onClick={() => setTab('chat')}
+            onClick={() => { haptic('light'); setTab('chat'); }}
           />
           <NavBtn
             icon={Bell}
             label="Alertas"
-            active={false}
-            onClick={() => piggyPopup.show('Em breve! 🐷', 'idle')}
+            active={tab === 'alerts'}
+            onClick={() => { haptic('light'); setTab('alerts'); }}
           />
         </div>
       </nav>
