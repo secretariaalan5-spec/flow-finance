@@ -8,9 +8,12 @@ import CategoryChart from '@/components/CategoryChart';
 import TransactionList from '@/components/TransactionList';
 import PiggyChat from '@/components/PiggyChat';
 import PiggyAvatar, { PiggyMood } from '@/components/PiggyAvatar';
+import AlertsScreen from '@/components/AlertsScreen';
+import PullToRefresh from '@/components/PullToRefresh';
 import { useTransactions } from '@/hooks/useTransactions';
 import { usePiggyPopup } from '@/components/PiggyPopup';
 import { usePiggyEffects } from '@/components/PiggyEffects';
+import { haptic } from '@/lib/haptics';
 import {
   getInactivityMessage,
   recordVisit,
@@ -22,7 +25,7 @@ import {
 } from '@/lib/piggyState';
 import { sendFinancialAnalysis, sendWeeklySummary } from '@/lib/gemini';
 
-type Tab = 'dashboard' | 'history' | 'chat';
+type Tab = 'dashboard' | 'history' | 'chat' | 'alerts';
 
 export default function Index() {
   const [tab, setTab] = useState<Tab>('dashboard');
@@ -156,7 +159,7 @@ export default function Index() {
       )}
 
       {/* CONTEÚDO SCROLLÁVEL */}
-      <main className="flex-1 app-scroll px-5 pb-32">
+      <main className="flex-1 relative overflow-hidden">
         <AnimatePresence mode="wait">
           {tab === 'dashboard' && (
             <motion.div
@@ -165,24 +168,34 @@ export default function Index() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
-              className="space-y-5"
+              className="h-full"
             >
-              <BalanceCards />
-              <CategoryChart />
-              <div>
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">
-                    Atividade Recente
-                  </p>
-                  <button
-                    onClick={() => setTab('history')}
-                    className="text-[11px] uppercase tracking-wider text-primary font-semibold tap-scale"
-                  >
-                    Ver tudo
-                  </button>
+              <PullToRefresh
+                onRefresh={async () => {
+                  await new Promise((r) => setTimeout(r, 700));
+                  const msg = getContextualMessage({ balance, totalExpense, totalIncome });
+                  piggyPopup.show(msg, balance < 0 ? 'sad' : 'happy');
+                }}
+              >
+                <div className="px-5 pb-32 space-y-5">
+                  <BalanceCards />
+                  <CategoryChart />
+                  <div>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">
+                        Atividade Recente
+                      </p>
+                      <button
+                        onClick={() => { haptic('light'); setTab('history'); }}
+                        className="text-[11px] uppercase tracking-wider text-primary font-semibold tap-scale"
+                      >
+                        Ver tudo
+                      </button>
+                    </div>
+                    <TransactionList limit={5} />
+                  </div>
                 </div>
-                <TransactionList limit={5} />
-              </div>
+              </PullToRefresh>
             </motion.div>
           )}
 
@@ -193,10 +206,25 @@ export default function Index() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
+              className="h-full app-scroll px-5 pb-32"
             >
               <h2 className="font-display text-4xl text-foreground mb-1 leading-none">Histórico</h2>
               <p className="text-sm text-muted-foreground mb-5">Todas as suas transações.</p>
+              <p className="text-[11px] text-muted-foreground/70 mb-3">💡 Arraste pra esquerda pra excluir</p>
               <TransactionList showFilters />
+            </motion.div>
+          )}
+
+          {tab === 'alerts' && (
+            <motion.div
+              key="alerts"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+              className="h-full app-scroll px-5 pb-32"
+            >
+              <AlertsScreen />
             </motion.div>
           )}
 
@@ -206,7 +234,7 @@ export default function Index() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="h-[calc(100vh-9rem)] -mx-5"
+              className="h-[calc(100vh-9rem)]"
             >
               <PiggyChat />
             </motion.div>
@@ -255,18 +283,18 @@ export default function Index() {
             icon={Home}
             label="Início"
             active={tab === 'dashboard'}
-            onClick={() => setTab('dashboard')}
+            onClick={() => { haptic('light'); setTab('dashboard'); }}
           />
           <NavBtn
             icon={Clock}
             label="Histórico"
             active={tab === 'history'}
-            onClick={() => setTab('history')}
+            onClick={() => { haptic('light'); setTab('history'); }}
           />
 
           {/* FAB CENTRAL */}
           <button
-            onClick={() => setShowQuickAdd(true)}
+            onClick={() => { haptic('medium'); setShowQuickAdd(true); }}
             className="-mt-7 w-14 h-14 rounded-full gradient-primary text-primary-foreground flex items-center justify-center shadow-2xl shadow-primary/40 tap-scale border-4 border-background"
             aria-label="Adicionar transação"
           >
@@ -277,13 +305,13 @@ export default function Index() {
             icon={Sparkles}
             label="Cofrinho"
             active={tab === 'chat'}
-            onClick={() => setTab('chat')}
+            onClick={() => { haptic('light'); setTab('chat'); }}
           />
           <NavBtn
             icon={Bell}
             label="Alertas"
-            active={false}
-            onClick={() => piggyPopup.show('Em breve! 🐷', 'idle')}
+            active={tab === 'alerts'}
+            onClick={() => { haptic('light'); setTab('alerts'); }}
           />
         </div>
       </nav>
