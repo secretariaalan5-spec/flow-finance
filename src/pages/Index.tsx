@@ -128,29 +128,31 @@ export default function Index() {
     <div className="h-screen w-full max-w-lg mx-auto flex flex-col relative overflow-hidden">
       {/* HEADER MOBILE — sticky, com avatar + saudação */}
       {tab !== 'chat' && (
-        <header className="safe-top px-5 pb-4 flex items-center justify-between flex-shrink-0 z-20">
+        <header className="safe-top px-5 pb-3 flex items-center justify-between flex-shrink-0 z-20">
           <button
             onClick={handleAnalysis}
             disabled={isAnalyzing}
             className="flex items-center gap-3 tap-scale"
           >
-            <div className="relative w-11 h-11 rounded-full bg-card border border-border/50 flex items-center justify-center overflow-hidden">
-              <div className="absolute inset-0 bg-primary/20 blur-md" />
-              <PiggyAvatar mood={piggyMood} className="w-10 h-10 relative" />
+            <div className="relative w-12 h-12 rounded-full bg-card border-2 border-primary/20 flex items-center justify-center overflow-hidden shadow-sm">
+              <div className="absolute inset-0 bg-primary/10 blur-md" />
+              <PiggyAvatar mood={piggyMood} className="w-11 h-11 relative" />
             </div>
             <div className="text-left">
-              <p className="text-xs text-muted-foreground leading-none">{greeting}</p>
-              <p className="text-sm font-semibold text-foreground leading-tight mt-0.5 capitalize">
-                {today.split(',')[0]}
+              <p className="text-[10px] text-muted-foreground leading-none tracking-wide">
+                {greeting} 👋
+              </p>
+              <p className="text-base font-bold text-foreground leading-tight mt-0.5">
+                {user?.email?.split('@')[0] ?? 'Você'}
               </p>
             </div>
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={toggleTheme}
               aria-label="Alternar tema"
-              className="w-10 h-10 rounded-full bg-card border border-border/50 flex items-center justify-center tap-scale relative overflow-hidden"
+              className="w-10 h-10 rounded-2xl bg-card border border-border/50 flex items-center justify-center tap-scale"
             >
               {theme === 'dark' ? (
                 <Sun className="w-4 h-4 text-accent" />
@@ -162,7 +164,7 @@ export default function Index() {
               onClick={() => signOut()}
               aria-label="Sair"
               title={`Sair (${user?.email})`}
-              className="w-10 h-10 rounded-full bg-card border border-border/50 flex items-center justify-center tap-scale relative overflow-hidden"
+              className="w-10 h-10 rounded-2xl bg-card border border-border/50 flex items-center justify-center tap-scale"
             >
               <LogOut className="w-4 h-4 text-muted-foreground" />
             </button>
@@ -345,12 +347,28 @@ function NavBtn({
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl tap-scale transition-colors ${
-        active ? 'text-primary' : 'text-muted-foreground'
-      }`}
+      className="relative flex flex-col items-center gap-1 px-4 py-2 rounded-2xl tap-scale transition-all"
     >
-      <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} />
-      <span className={`text-[9px] font-semibold uppercase tracking-wider ${active ? 'opacity-100' : 'opacity-70'}`}>
+      {/* Pill indicador ativo */}
+      {active && (
+        <motion.div
+          layoutId="nav-active-pill"
+          className="absolute inset-0 rounded-2xl"
+          style={{ background: 'hsl(var(--primary) / 0.12)' }}
+          transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+        />
+      )}
+      <Icon
+        className={`w-[22px] h-[22px] relative z-10 transition-colors ${
+          active ? 'text-primary' : 'text-muted-foreground'
+        }`}
+        strokeWidth={active ? 2.5 : 2}
+      />
+      <span
+        className={`text-[9px] font-bold uppercase tracking-wide relative z-10 transition-colors ${
+          active ? 'text-primary' : 'text-muted-foreground/70'
+        }`}
+      >
         {label}
       </span>
     </button>
