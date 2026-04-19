@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Clock, Sparkles, Plus, Bell } from 'lucide-react';
+import { Home, Clock, Sparkles, Plus, Bell, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/lib/theme';
 import BalanceCards from '@/components/BalanceCards';
 import TransactionInput from '@/components/TransactionInput';
 import CategoryChart from '@/components/CategoryChart';
@@ -20,6 +21,7 @@ export default function Index() {
   const { balance, totalIncome, totalExpense, categoryTotals, currentMonth } = useTransactions();
   const piggyPopup = usePiggyPopup();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { theme, toggle: toggleTheme } = useTheme();
 
   let piggyMood: PiggyMood = 'idle';
   if (balance < 0) piggyMood = 'sad';
@@ -84,9 +86,16 @@ export default function Index() {
             </div>
           </button>
 
-          <button className="w-11 h-11 rounded-full bg-card border border-border/50 flex items-center justify-center tap-scale relative">
-            <Bell className="w-4 h-4 text-muted-foreground" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full pulse-glow" />
+          <button
+            onClick={toggleTheme}
+            aria-label="Alternar tema"
+            className="w-11 h-11 rounded-full bg-card border border-border/50 flex items-center justify-center tap-scale relative overflow-hidden"
+          >
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-accent" />
+            ) : (
+              <Moon className="w-4 h-4 text-primary" />
+            )}
           </button>
         </header>
       )}

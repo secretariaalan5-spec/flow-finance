@@ -10,10 +10,30 @@ interface PiggyAvatarProps {
 
 export default function PiggyAvatar({ mood = "idle", isSpeaking = false, className = "" }: PiggyAvatarProps) {
   const bodyAnim: Variants = {
-    idle: { y: [0, -4, 0], scaleX: [1, 1.02, 1], scaleY: [1, 0.98, 1], transition: { duration: 2.5, repeat: Infinity, ease: "easeInOut" } },
-    happy: { y: [0, -12, 0], scaleY: [1, 1.05, 1], transition: { duration: 0.6, repeat: Infinity, ease: "easeInOut" } },
-    sad: { y: [0, 4, 0], scaleY: [1, 0.94, 1], transition: { duration: 3, repeat: Infinity, ease: "easeInOut" } },
-    surprised: { y: -6, transition: { type: "spring", stiffness: 300, damping: 10 } },
+    idle: {
+      y: [0, -6, 0, -3, 0],
+      rotate: [0, -2, 0, 2, 0],
+      scaleX: [1, 1.03, 1, 1.02, 1],
+      scaleY: [1, 0.97, 1, 0.98, 1],
+      transition: { duration: 2.2, repeat: Infinity, ease: "easeInOut" },
+    },
+    happy: {
+      y: [0, -18, 0, -14, 0],
+      rotate: [0, -8, 0, 8, 0],
+      scaleY: [1, 1.08, 1, 1.06, 1],
+      transition: { duration: 0.5, repeat: Infinity, ease: "easeInOut" },
+    },
+    sad: {
+      y: [0, 5, 0],
+      rotate: [-3, -3, -3],
+      scaleY: [1, 0.92, 1],
+      transition: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
+    },
+    surprised: {
+      y: [-10, -6, -10],
+      scale: [1.1, 1.05, 1.1],
+      transition: { duration: 0.4, repeat: Infinity, ease: "easeInOut" },
+    },
   };
 
   const eyeScale = mood === "surprised" ? 1.3 : mood === "sad" ? 0.8 : 1;
@@ -38,6 +58,20 @@ export default function PiggyAvatar({ mood = "idle", isSpeaking = false, classNa
     happy: { rotate: [0, -25, 0], y: [-5, -12, -5], transition: { duration: 0.6, repeat: Infinity, ease: "easeInOut" } },
     sad: { rotate: 18, y: 5 },
     surprised: { rotate: -30, y: -8 },
+  };
+
+  const earAnim: Variants = {
+    idle: { rotate: [0, 8, 0, -4, 0], transition: { duration: 2.2, repeat: Infinity, ease: "easeInOut" } },
+    happy: { rotate: [0, 18, 0, -10, 0], transition: { duration: 0.5, repeat: Infinity } },
+    sad: { rotate: -8 },
+    surprised: { rotate: [0, -15, 15, 0], transition: { duration: 0.4, repeat: Infinity } },
+  };
+
+  const tailAnim: Variants = {
+    idle: { rotate: [0, 25, 0, -15, 0], transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" } },
+    happy: { rotate: [0, 45, -10, 50, 0], transition: { duration: 0.4, repeat: Infinity } },
+    sad: { rotate: -10 },
+    surprised: { rotate: [0, 30, -20, 0], transition: { duration: 0.5, repeat: Infinity } },
   };
 
   return (
@@ -67,8 +101,16 @@ export default function PiggyAvatar({ mood = "idle", isSpeaking = false, classNa
         <ellipse cx="65" cy="175" rx="14" ry="20" fill="url(#legGrad)" />
         <ellipse cx="135" cy="175" rx="14" ry="20" fill="url(#legGrad)" />
 
-        <path d="M 35 75 L 22 18 L 85 45 Z" fill="url(#bodyGrad)" />
-        <path d="M 165 75 L 178 18 L 115 45 Z" fill="url(#bodyGrad)" />
+        <motion.g variants={tailAnim} animate={mood} style={{ originX: "180px", originY: "110px" }}>
+          <path d="M 175 105 Q 195 100 198 115 Q 200 128 188 130" fill="none" stroke="#A85F85" strokeWidth="5" strokeLinecap="round" />
+        </motion.g>
+
+        <motion.g variants={earAnim} animate={mood} style={{ originX: "55px", originY: "55px" }}>
+          <path d="M 35 75 L 22 18 L 85 45 Z" fill="url(#bodyGrad)" />
+        </motion.g>
+        <motion.g variants={earAnim} animate={mood} style={{ originX: "145px", originY: "55px" }}>
+          <path d="M 165 75 L 178 18 L 115 45 Z" fill="url(#bodyGrad)" />
+        </motion.g>
 
         <circle cx="100" cy="100" r="78" fill="url(#bodyGrad)" />
         <path d="M 22 100 A 78 78 0 0 0 178 100 A 82 78 0 0 1 22 100 Z" fill="#7A2655" opacity="0.12" />

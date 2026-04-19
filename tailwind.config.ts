@@ -12,9 +12,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ['"Manrope"', 'sans-serif'],
-        body: ['"Manrope"', 'sans-serif'],
-        display: ['"Instrument Serif"', 'serif'],
+        heading: ['"Bricolage Grotesque"', 'sans-serif'],
+        body: ['"Plus Jakarta Sans"', 'sans-serif'],
+        display: ['"Fraunces"', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",

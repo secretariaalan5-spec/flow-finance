@@ -1,67 +1,68 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ===== QUIET WEALTH — Mobile Native Dark Theme ===== */
-
 @layer base {
-  :root {
-    --background: 60 20% 97%;
-    --foreground: 150 30% 10%;
+  /* Light theme — warm parchment with deep forest accents */
+  :root, .light {
+    --background: 40 30% 96%;
+    --surface: 40 25% 93%;
+    --foreground: 155 30% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 150 30% 10%;
+    --card-elevated: 40 30% 98%;
+    --card-foreground: 155 30% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 150 30% 10%;
-    --primary: 150 50% 22%;
-    --primary-foreground: 60 20% 97%;
-    --secondary: 60 15% 92%;
-    --secondary-foreground: 150 30% 15%;
-    --muted: 60 12% 90%;
-    --muted-foreground: 150 10% 40%;
-    --accent: 45 60% 55%;
-    --accent-foreground: 150 30% 10%;
-    --destructive: 8 70% 50%;
+    --popover-foreground: 155 30% 10%;
+    --primary: 150 55% 28%;
+    --primary-foreground: 40 30% 98%;
+    --secondary: 40 20% 90%;
+    --secondary-foreground: 155 30% 15%;
+    --muted: 40 15% 88%;
+    --muted-foreground: 155 10% 38%;
+    --accent: 25 85% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 8 75% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 60 10% 88%;
-    --input: 60 10% 88%;
-    --ring: 150 50% 22%;
+    --border: 40 15% 84%;
+    --input: 40 15% 88%;
+    --ring: 150 55% 28%;
     --radius: 1.5rem;
-    --income: 150 50% 35%;
-    --expense: 8 70% 55%;
-    --warning: 35 80% 55%;
-    --gold: 42 65% 60%;
+    --income: 150 55% 32%;
+    --expense: 8 70% 50%;
+    --warning: 35 85% 50%;
+    --gold: 38 75% 50%;
   }
 
   .dark {
-    /* Tema escuro nativo: verde-petróleo profundo, contraste suave */
-    --background: 155 25% 5%;          /* fundo deep — quase preto verde */
-    --surface: 155 22% 8%;             /* superfície base */
-    --foreground: 60 20% 95%;          /* off-white quente */
-    --card: 155 18% 10%;               /* cards elevados */
-    --card-elevated: 155 16% 13%;      /* cards mais altos */
-    --card-foreground: 60 20% 95%;
-    --popover: 155 20% 11%;
-    --popover-foreground: 60 20% 95%;
-    --primary: 145 55% 48%;            /* verde sage vivo (acento) */
-    --primary-foreground: 155 30% 6%;
+    /* Deep forest dark — cozy & cinematic */
+    --background: 155 30% 5%;
+    --surface: 155 25% 8%;
+    --foreground: 40 25% 95%;
+    --card: 155 22% 10%;
+    --card-elevated: 155 18% 13%;
+    --card-foreground: 40 25% 95%;
+    --popover: 155 22% 11%;
+    --popover-foreground: 40 25% 95%;
+    --primary: 145 60% 52%;
+    --primary-foreground: 155 35% 6%;
     --secondary: 155 15% 14%;
-    --secondary-foreground: 60 15% 90%;
+    --secondary-foreground: 40 20% 90%;
     --muted: 155 12% 12%;
-    --muted-foreground: 60 8% 58%;
-    --accent: 42 70% 65%;              /* dourado suave */
-    --accent-foreground: 155 30% 8%;
-    --destructive: 8 70% 58%;
+    --muted-foreground: 40 8% 62%;
+    --accent: 25 90% 62%;
+    --accent-foreground: 155 35% 8%;
+    --destructive: 8 72% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 155 15% 16%;
+    --border: 155 15% 17%;
     --input: 155 15% 14%;
-    --ring: 145 55% 48%;
+    --ring: 145 60% 52%;
     --radius: 1.5rem;
-    --income: 145 55% 52%;
-    --expense: 8 65% 60%;
-    --warning: 35 75% 60%;
-    --gold: 42 70% 65%;
+    --income: 145 60% 55%;
+    --expense: 8 68% 62%;
+    --warning: 35 80% 62%;
+    --gold: 42 75% 65%;
   }
 }
 
@@ -81,10 +82,20 @@
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
     touch-action: pan-x pan-y;
-    background-image:
-      radial-gradient(circle at 15% -10%, hsl(145 55% 48% / 0.10), transparent 45%),
-      radial-gradient(circle at 90% 110%, hsl(42 70% 65% / 0.06), transparent 45%);
     background-attachment: fixed;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  .dark body {
+    background-image:
+      radial-gradient(circle at 15% -10%, hsl(145 60% 52% / 0.10), transparent 45%),
+      radial-gradient(circle at 90% 110%, hsl(25 90% 62% / 0.07), transparent 45%);
+  }
+
+  .light body {
+    background-image:
+      radial-gradient(circle at 15% -10%, hsl(150 55% 28% / 0.09), transparent 45%),
+      radial-gradient(circle at 90% 110%, hsl(25 85% 55% / 0.08), transparent 45%);
   }
 
   input, textarea, [contenteditable] {
@@ -92,10 +103,8 @@
     user-select: text;
   }
 
-  html { @apply dark; }
   h1, h2, h3, h4, h5, h6 { @apply font-heading; }
 
-  /* Safe area helpers */
   .safe-top { padding-top: max(env(safe-area-inset-top), 1rem); }
   .safe-bottom { padding-bottom: max(env(safe-area-inset-bottom), 1rem); }
   .safe-x {
@@ -105,15 +114,13 @@
 }
 
 @layer utilities {
-  /* Cards com profundidade real */
   .quiet-card {
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border) / 0.6);
     border-radius: 1.5rem;
     box-shadow:
       0 1px 0 0 hsl(0 0% 100% / 0.04) inset,
-      0 0 0 1px hsl(0 0% 0% / 0.2),
-      0 12px 32px -16px hsl(155 50% 2% / 0.7);
+      0 12px 32px -16px hsl(155 50% 2% / 0.4);
   }
 
   .elevated-card {
@@ -122,31 +129,31 @@
     border-radius: 1.75rem;
     box-shadow:
       0 1px 0 0 hsl(0 0% 100% / 0.05) inset,
-      0 20px 40px -20px hsl(155 50% 2% / 0.8);
+      0 20px 40px -20px hsl(155 50% 2% / 0.5);
   }
 
   .glass-nav {
-    background: hsl(var(--card) / 0.75);
-    backdrop-filter: blur(24px) saturate(140%);
-    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    background: hsl(var(--card) / 0.78);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
     border: 1px solid hsl(var(--border) / 0.6);
     box-shadow:
       0 1px 0 0 hsl(0 0% 100% / 0.04) inset,
-      0 -8px 32px -8px hsl(155 50% 2% / 0.6);
+      0 -8px 32px -8px hsl(155 50% 2% / 0.4);
   }
 
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(150 50% 38%) 100%);
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.75) 100%);
   }
 
   .gradient-hero {
     background:
-      radial-gradient(circle at 0% 0%, hsl(145 55% 48% / 0.18), transparent 60%),
-      linear-gradient(160deg, hsl(155 25% 9%) 0%, hsl(155 22% 7%) 100%);
+      radial-gradient(circle at 0% 0%, hsl(var(--primary) / 0.18), transparent 60%),
+      linear-gradient(160deg, hsl(var(--card-elevated)) 0%, hsl(var(--card)) 100%);
   }
 
   .gradient-gold {
-    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(38 65% 55%) 100%);
+    background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(var(--gold)) 100%);
   }
 
   .text-gold { color: hsl(var(--gold)); }
@@ -155,12 +162,12 @@
   .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
   .number-display {
-    font-family: 'Instrument Serif', serif;
+    font-family: 'Fraunces', serif;
     font-feature-settings: 'tnum';
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
+    font-weight: 500;
   }
 
-  /* Scroll container interno (substitui o body scroll) */
   .app-scroll {
     overflow-y: auto;
     overflow-x: hidden;
@@ -168,19 +175,23 @@
     overscroll-behavior-y: contain;
   }
 
-  /* Ripple/tap feedback para sentir nativo */
   .tap-scale {
     transition: transform 0.15s ease, opacity 0.15s ease;
   }
   .tap-scale:active {
-    transform: scale(0.96);
+    transform: scale(0.94);
     opacity: 0.85;
   }
 
-  /* Haptic-like pull animation */
   @keyframes pulse-glow {
     0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4); }
     50% { box-shadow: 0 0 0 12px hsl(var(--primary) / 0); }
   }
   .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+  @keyframes piggy-wiggle {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  .piggy-wiggle { animation: piggy-wiggle 0.6s ease-in-out infinite; }
 }
