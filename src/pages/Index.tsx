@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Clock, Sparkles, Plus, Bell, Sun, Moon, LogOut } from 'lucide-react';
+import { Home, Clock, Sparkles, Plus, Sun, Moon, LogOut, Target } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import BalanceCards from '@/components/BalanceCards';
@@ -9,9 +9,11 @@ import CategoryChart from '@/components/CategoryChart';
 import TransactionList from '@/components/TransactionList';
 import PiggyChat from '@/components/PiggyChat';
 import PiggyAvatar, { PiggyMood } from '@/components/PiggyAvatar';
-import AlertsScreen from '@/components/AlertsScreen';
+import BudgetBars from '@/components/BudgetBars';
+import BudgetsScreen from '@/components/BudgetsScreen';
 import PullToRefresh from '@/components/PullToRefresh';
 import { useTransactions } from '@/hooks/useTransactions';
+import { useBudgets } from '@/hooks/useBudgets';
 import { usePiggyPopup } from '@/components/PiggyPopup';
 import { usePiggyEffects } from '@/components/PiggyEffects';
 import { haptic } from '@/lib/haptics';
@@ -26,12 +28,13 @@ import {
 } from '@/lib/piggyState';
 import { sendFinancialAnalysis, sendWeeklySummary } from '@/lib/gemini';
 
-type Tab = 'dashboard' | 'history' | 'chat' | 'alerts';
+type Tab = 'dashboard' | 'history' | 'chat' | 'budgets';
 
 export default function Index() {
   const [tab, setTab] = useState<Tab>('dashboard');
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const { transactions, balance, totalIncome, totalExpense, categoryTotals, currentMonth } = useTransactions();
+  const { exceeded } = useBudgets();
   const piggyPopup = usePiggyPopup();
   const piggyEffects = usePiggyEffects();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -40,6 +43,7 @@ export default function Index() {
   const prevTxCountRef = useRef(transactions.length);
   const prevBalanceRef = useRef(balance);
   const bootedRef = useRef(false);
+  const prevExceededRef = useRef(exceeded.length);
 
   let piggyMood: PiggyMood = 'idle';
   if (isAnalyzing) piggyMood = 'thinking';
@@ -101,6 +105,16 @@ export default function Index() {
     }
     prevBalanceRef.current = balance;
   }, [balance, piggyEffects]);
+
+  // Reage quando um limite de categoria é ultrapassado
+  useEffect(() => {
+    if (exceeded.length > prevExceededRef.current) {
+      const newest = exceeded[exceeded.length - 1];
+      piggyPopup.show(`Opa! Você passou o limite de ${newest.categoria} esse mês 😬`, 'sad');
+      piggyEffects.trigger('shake');
+    }
+    prevExceededRef.current = exceeded.length;
+  }, [exceeded, piggyPopup, piggyEffects]);
 
   const handleAnalysis = async () => {
     if (isAnalyzing) return;
@@ -193,6 +207,7 @@ export default function Index() {
               >
                 <div className="px-5 pb-32 space-y-5">
                   <BalanceCards />
+                  <BudgetBars onManage={() => { haptic('light'); setTab('budgets'); }} />
                   <CategoryChart />
                   <div>
                     <div className="flex items-center justify-between mb-3 px-1">
@@ -229,16 +244,16 @@ export default function Index() {
             </motion.div>
           )}
 
-          {tab === 'alerts' && (
+          {tab === 'budgets' && (
             <motion.div
-              key="alerts"
+              key="budgets"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
-              className="h-full app-scroll px-5 pb-32"
+              className="h-full app-scroll px-5 pb-32 pt-2"
             >
-              <AlertsScreen />
+              <BudgetsScreen />
             </motion.div>
           )}
 
@@ -322,10 +337,11 @@ export default function Index() {
             onClick={() => { haptic('light'); setTab('chat'); }}
           />
           <NavBtn
-            icon={Bell}
-            label="Alertas"
-            active={tab === 'alerts'}
-            onClick={() => { haptic('light'); setTab('alerts'); }}
+            icon={Target}
+            label="Limites"
+            active={tab === 'budgets'}
+            badge={exceeded.length > 0 ? exceeded.length : undefined}
+            onClick={() => { haptic('light'); setTab('budgets'); }}
           />
         </div>
       </nav>
@@ -338,18 +354,19 @@ function NavBtn({
   label,
   active,
   onClick,
+  badge,
 }: {
   icon: typeof Home;
   label: string;
   active: boolean;
   onClick: () => void;
+  badge?: number;
 }) {
   return (
     <button
       onClick={onClick}
       className="relative flex flex-col items-center gap-1 px-4 py-2 rounded-2xl tap-scale transition-all"
     >
-      {/* Pill indicador ativo */}
       {active && (
         <motion.div
           layoutId="nav-active-pill"
@@ -358,12 +375,19 @@ function NavBtn({
           transition={{ type: 'spring', stiffness: 400, damping: 35 }}
         />
       )}
-      <Icon
-        className={`w-[22px] h-[22px] relative z-10 transition-colors ${
-          active ? 'text-primary' : 'text-muted-foreground'
-        }`}
-        strokeWidth={active ? 2.5 : 2}
-      />
+      <div className="relative">
+        <Icon
+          className={`w-[22px] h-[22px] relative z-10 transition-colors ${
+            active ? 'text-primary' : 'text-muted-foreground'
+          }`}
+          strokeWidth={active ? 2.5 : 2}
+        />
+        {badge !== undefined && badge > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center z-20">
+            {badge > 9 ? '9+' : badge}
+          </span>
+        )}
+      </div>
       <span
         className={`text-[9px] font-bold uppercase tracking-wide relative z-10 transition-colors ${
           active ? 'text-primary' : 'text-muted-foreground/70'
@@ -374,3 +398,4 @@ function NavBtn({
     </button>
   );
 }
+
