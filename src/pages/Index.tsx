@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Clock, Sparkles, Plus } from 'lucide-react';
+import { Home, Clock, Sparkles, Plus, Bell } from 'lucide-react';
 import BalanceCards from '@/components/BalanceCards';
 import TransactionInput from '@/components/TransactionInput';
 import CategoryChart from '@/components/CategoryChart';
@@ -16,6 +16,7 @@ type Tab = 'dashboard' | 'history' | 'chat';
 
 export default function Index() {
   const [tab, setTab] = useState<Tab>('dashboard');
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
   const { balance, totalIncome, totalExpense, categoryTotals, currentMonth } = useTransactions();
   const piggyPopup = usePiggyPopup();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -58,43 +59,51 @@ export default function Index() {
   };
 
   const today = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
 
   return (
-    <div className="min-h-screen bg-background flex flex-col max-w-lg mx-auto relative">
-      {/* Header minimalista */}
+    <div className="h-screen w-full max-w-lg mx-auto flex flex-col relative overflow-hidden">
+      {/* HEADER MOBILE — sticky, com avatar + saudação */}
       {tab !== 'chat' && (
-        <header className="px-6 pt-8 pb-2 flex items-center justify-between">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-semibold">
-              Cofrinho
-            </p>
-            <p className="text-xs text-muted-foreground/70 capitalize mt-0.5">{today}</p>
-          </div>
+        <header className="safe-top px-5 pb-4 flex items-center justify-between flex-shrink-0 z-20">
           <button
             onClick={handleAnalysis}
             disabled={isAnalyzing}
-            className="relative w-12 h-12 rounded-full hover:scale-105 transition-transform disabled:opacity-60"
-            aria-label="Pedir análise ao Cofrinho"
+            className="flex items-center gap-3 tap-scale"
           >
-            <div className="absolute inset-0 rounded-full bg-primary/10 blur-xl" />
-            <PiggyAvatar mood={piggyMood} className="w-12 h-12 relative" />
+            <div className="relative w-11 h-11 rounded-full bg-card border border-border/50 flex items-center justify-center overflow-hidden">
+              <div className="absolute inset-0 bg-primary/20 blur-md" />
+              <PiggyAvatar mood={piggyMood} className="w-10 h-10 relative" />
+            </div>
+            <div className="text-left">
+              <p className="text-xs text-muted-foreground leading-none">{greeting}</p>
+              <p className="text-sm font-semibold text-foreground leading-tight mt-0.5 capitalize">
+                {today.split(',')[0]}
+              </p>
+            </div>
+          </button>
+
+          <button className="w-11 h-11 rounded-full bg-card border border-border/50 flex items-center justify-center tap-scale relative">
+            <Bell className="w-4 h-4 text-muted-foreground" />
+            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full pulse-glow" />
           </button>
         </header>
       )}
 
-      {/* Conteúdo */}
-      <main className="flex-1 px-5 pb-28 pt-2">
+      {/* CONTEÚDO SCROLLÁVEL */}
+      <main className="flex-1 app-scroll px-5 pb-32">
         <AnimatePresence mode="wait">
           {tab === 'dashboard' && (
             <motion.div
               key="dashboard"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
               className="space-y-5"
             >
               <BalanceCards />
-              <TransactionInput />
               <CategoryChart />
               <div>
                 <div className="flex items-center justify-between mb-3 px-1">
@@ -103,7 +112,7 @@ export default function Index() {
                   </p>
                   <button
                     onClick={() => setTab('history')}
-                    className="text-[11px] uppercase tracking-wider text-primary font-semibold hover:underline"
+                    className="text-[11px] uppercase tracking-wider text-primary font-semibold tap-scale"
                   >
                     Ver tudo
                   </button>
@@ -116,11 +125,12 @@ export default function Index() {
           {tab === 'history' && (
             <motion.div
               key="history"
-              initial={{ opacity: 0, y: 8 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
             >
-              <h2 className="font-display text-3xl text-foreground mb-1">Histórico</h2>
+              <h2 className="font-display text-4xl text-foreground mb-1 leading-none">Histórico</h2>
               <p className="text-sm text-muted-foreground mb-5">Todas as suas transações.</p>
               <TransactionList showFilters />
             </motion.div>
@@ -132,7 +142,7 @@ export default function Index() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="h-[calc(100vh-7rem)] -mx-5 -mt-2"
+              className="h-[calc(100vh-9rem)] -mx-5"
             >
               <PiggyChat />
             </motion.div>
@@ -140,30 +150,105 @@ export default function Index() {
         </AnimatePresence>
       </main>
 
-      {/* Bottom Nav — minimal flutuante */}
-      <nav className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 flex items-center gap-1 bg-card/90 backdrop-blur-2xl border border-border/40 rounded-full p-1.5 shadow-2xl shadow-black/40">
-        {([
-          { id: 'dashboard' as Tab, icon: Home, label: 'Início' },
-          { id: 'history' as Tab, icon: Clock, label: 'Histórico' },
-          { id: 'chat' as Tab, icon: Sparkles, label: 'Cofrinho' },
-        ]).map((item) => {
-          const active = tab === item.id;
-          return (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-full transition-all ${
-                active
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+      {/* QUICK ADD SHEET (bottom sheet) */}
+      <AnimatePresence>
+        {showQuickAdd && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowQuickAdd(false)}
+              className="fixed inset-0 bg-black/60 z-40 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 280 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.4 }}
+              onDragEnd={(_, info) => { if (info.offset.y > 100) setShowQuickAdd(false); }}
+              className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto"
             >
-              <item.icon className="w-4 h-4" />
-              {active && <span className="text-xs font-semibold">{item.label}</span>}
-            </button>
-          );
-        })}
+              <div className="elevated-card rounded-b-none p-5 pb-8 safe-bottom">
+                <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-4 text-center">
+                  Registrar Movimentação
+                </p>
+                <TransactionInput onDone={() => setShowQuickAdd(false)} />
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* BOTTOM NAV NATIVO com FAB central */}
+      <nav className="fixed bottom-0 left-0 right-0 z-30 max-w-lg mx-auto safe-bottom px-4 pt-2">
+        <div className="glass-nav rounded-3xl px-2 py-2 flex items-center justify-around relative">
+          <NavBtn
+            icon={Home}
+            label="Início"
+            active={tab === 'dashboard'}
+            onClick={() => setTab('dashboard')}
+          />
+          <NavBtn
+            icon={Clock}
+            label="Histórico"
+            active={tab === 'history'}
+            onClick={() => setTab('history')}
+          />
+
+          {/* FAB CENTRAL */}
+          <button
+            onClick={() => setShowQuickAdd(true)}
+            className="-mt-7 w-14 h-14 rounded-full gradient-primary text-primary-foreground flex items-center justify-center shadow-2xl shadow-primary/40 tap-scale border-4 border-background"
+            aria-label="Adicionar transação"
+          >
+            <Plus className="w-6 h-6" strokeWidth={2.5} />
+          </button>
+
+          <NavBtn
+            icon={Sparkles}
+            label="Cofrinho"
+            active={tab === 'chat'}
+            onClick={() => setTab('chat')}
+          />
+          <NavBtn
+            icon={Bell}
+            label="Alertas"
+            active={false}
+            onClick={() => piggyPopup.show('Em breve! 🐷', 'idle')}
+          />
+        </div>
       </nav>
     </div>
+  );
+}
+
+function NavBtn({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: typeof Home;
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl tap-scale transition-colors ${
+        active ? 'text-primary' : 'text-muted-foreground'
+      }`}
+    >
+      <Icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} />
+      <span className={`text-[9px] font-semibold uppercase tracking-wider ${active ? 'opacity-100' : 'opacity-70'}`}>
+        {label}
+      </span>
+    </button>
   );
 }
