@@ -1,101 +1,117 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ===== QUIET WEALTH — Design System ===== */
+/* Paleta: verde escuro elegante, off-white, dourado sutil */
+
 @layer base {
   :root {
-    --background: 220 20% 97%;
-    --foreground: 220 20% 10%;
+    /* Light (não usado por padrão, fallback) */
+    --background: 60 20% 97%;
+    --foreground: 150 30% 10%;
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 10%;
+    --card-foreground: 150 30% 10%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 10%;
-    --primary: 160 60% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 15% 92%;
-    --secondary-foreground: 220 20% 10%;
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 10% 50%;
-    --accent: 260 50% 55%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 70% 55%;
+    --popover-foreground: 150 30% 10%;
+    --primary: 150 50% 22%;
+    --primary-foreground: 60 20% 97%;
+    --secondary: 60 15% 92%;
+    --secondary-foreground: 150 30% 15%;
+    --muted: 60 12% 90%;
+    --muted-foreground: 150 10% 40%;
+    --accent: 45 60% 55%;
+    --accent-foreground: 150 30% 10%;
+    --destructive: 8 70% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 15% 90%;
-    --input: 220 15% 90%;
-    --ring: 160 60% 45%;
-    --radius: 1rem;
-    --income: 160 60% 45%;
-    --expense: 0 70% 55%;
-    --warning: 40 90% 55%;
+    --border: 60 10% 88%;
+    --input: 60 10% 88%;
+    --ring: 150 50% 22%;
+    --radius: 1.5rem;
+    --income: 150 50% 35%;
+    --expense: 8 70% 55%;
+    --warning: 35 80% 55%;
+    --gold: 42 65% 60%;
   }
 
   .dark {
-    --background: 225 25% 8%;
-    --foreground: 220 15% 92%;
-    --card: 225 20% 12%;
-    --card-foreground: 220 15% 92%;
-    --popover: 225 20% 14%;
-    --popover-foreground: 220 15% 92%;
-    --primary: 160 60% 45%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 225 15% 18%;
-    --secondary-foreground: 220 15% 85%;
-    --muted: 225 15% 16%;
-    --muted-foreground: 220 10% 55%;
-    --accent: 260 50% 60%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 65% 50%;
+    /* === DARK PRINCIPAL — Quiet Wealth === */
+    --background: 150 20% 8%;       /* verde quase preto */
+    --foreground: 60 15% 92%;       /* off-white quente */
+    --card: 150 18% 11%;            /* card escuro com toque verde */
+    --card-foreground: 60 15% 92%;
+    --popover: 150 18% 12%;
+    --popover-foreground: 60 15% 92%;
+    --primary: 145 45% 38%;         /* verde sage rico */
+    --primary-foreground: 60 20% 97%;
+    --secondary: 150 15% 16%;
+    --secondary-foreground: 60 15% 88%;
+    --muted: 150 12% 14%;
+    --muted-foreground: 60 8% 60%;
+    --accent: 42 50% 58%;           /* dourado sutil */
+    --accent-foreground: 150 30% 10%;
+    --destructive: 8 65% 52%;
     --destructive-foreground: 0 0% 100%;
-    --border: 225 15% 18%;
-    --input: 225 15% 20%;
-    --ring: 160 60% 45%;
-    --radius: 1rem;
-    --income: 160 60% 50%;
-    --expense: 0 65% 55%;
-    --warning: 40 85% 55%;
+    --border: 150 12% 18%;
+    --input: 150 12% 16%;
+    --ring: 145 45% 38%;
+    --radius: 1.5rem;
+    --income: 145 50% 45%;
+    --expense: 8 65% 58%;
+    --warning: 35 75% 55%;
+    --gold: 42 60% 62%;
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
   body {
     @apply bg-background text-foreground font-body antialiased;
-    -webkit-touch-callout: none; 
-    -webkit-user-select: none; 
-    user-select: none; 
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior-y: none;
     touch-action: pan-x pan-y;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    background-image:
+      radial-gradient(circle at 20% 0%, hsl(145 45% 38% / 0.08), transparent 50%),
+      radial-gradient(circle at 80% 100%, hsl(42 50% 58% / 0.05), transparent 50%);
   }
-  /* Permitir seleção de texto em campos de entrada */
   input, textarea, [contenteditable] {
     -webkit-user-select: text;
     user-select: text;
   }
-  html {
-    @apply dark;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading;
-  }
+  html { @apply dark; }
+  h1, h2, h3, h4, h5, h6 { @apply font-heading; }
 }
 
 @layer utilities {
   .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl;
+    @apply bg-card/70 backdrop-blur-2xl border border-border/40 rounded-3xl;
+    box-shadow: 0 8px 32px -8px hsl(150 30% 4% / 0.4);
   }
-  .gradient-income {
-    background: linear-gradient(135deg, hsl(var(--income)) 0%, hsl(160 60% 35%) 100%);
+  .quiet-card {
+    @apply bg-card border border-border/30 rounded-3xl;
+    box-shadow:
+      0 1px 0 0 hsl(60 15% 92% / 0.03) inset,
+      0 8px 24px -12px hsl(150 30% 4% / 0.5);
   }
-  .gradient-expense {
-    background: linear-gradient(135deg, hsl(var(--expense)) 0%, hsl(0 65% 40%) 100%);
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(150 45% 28%) 100%);
   }
-  .gradient-accent {
-    background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(280 50% 50%) 100%);
+  .gradient-gold {
+    background: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(38 55% 50%) 100%);
+  }
+  .text-gold { color: hsl(var(--gold)); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  .number-display {
+    font-family: 'Instrument Serif', serif;
+    font-feature-settings: 'tnum';
+    letter-spacing: -0.02em;
   }
 }

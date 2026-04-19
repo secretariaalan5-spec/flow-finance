@@ -2,11 +2,18 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { parseTransaction } from '@/lib/parser';
 import { useTransactions } from '@/hooks/useTransactions';
-import { Mic, MicOff, Send } from 'lucide-react';
+import { Mic, MicOff, ArrowRight } from 'lucide-react';
 import { sendProactiveSystemMessage } from '@/lib/gemini';
 import { startListening, isSTTSupported } from '@/lib/speech';
 import { recordTransaction } from '@/lib/piggyState';
 import { usePiggyPopup } from './PiggyPopup';
+
+const SHORTCUTS = [
+  { label: 'Mercado', text: 'gastei 50 mercado' },
+  { label: 'iFood', text: 'gastei 35 ifood' },
+  { label: 'Uber', text: 'gastei 15 uber' },
+  { label: 'Café', text: 'gastei 8 café' },
+];
 
 export default function TransactionInput() {
   const [text, setText] = useState('');
@@ -14,121 +21,88 @@ export default function TransactionInput() {
   const { add } = useTransactions();
   const piggyPopup = usePiggyPopup();
 
-  const handleShortcut = (shortcutText: string) => {
-    setText(shortcutText);
-    setTimeout(() => {
-      const btn = document.getElementById("btn-send-tx");
-      if (btn) btn.click();
-    }, 100);
-  };
-
-  const handleMicrophone = () => {
-    if (isListening) return;
-
-    if (!isSTTSupported()) {
-      piggyPopup.show("Seu navegador não suporta voz! Use o Chrome 🐷", "sad");
-      return;
-    }
-
-    startListening({
-      onStart: () => setIsListening(true),
-      onResult: (transcript) => {
-        setText(transcript);
-        // Auto-enviar após captar a fala
-        setTimeout(() => {
-          const btn = document.getElementById("btn-send-tx");
-          if (btn) btn.click();
-        }, 400);
-      },
-      onEnd: () => setIsListening(false),
-      onError: () => {
-        setIsListening(false);
-        piggyPopup.show("Não consegui ouvir... Tenta de novo? 🐷", "sad", false);
-      },
-    });
-  };
-
-  const handleSubmit = () => {
-    if (!text.trim()) return;
-    const t = parseTransaction(text);
+  const submit = (raw: string) => {
+    if (!raw.trim()) return;
+    const t = parseTransaction(raw);
     if (!t) {
-      piggyPopup.show('Não entendi... Tenta assim: "gastei 25 com mercado" 🐷', "surprised");
+      piggyPopup.show('Não entendi... Tenta: "gastei 25 mercado" 🐷', 'surprised');
       return;
     }
     add(t);
     recordTransaction();
-    
-    // Proactive response from Piggy AI via Popup
-    const rawText = text;
     setText('');
-    
+    piggyPopup.show(`Transação registrada em ${t.categoria}`, t.tipo === 'receita' ? 'happy' : 'idle');
     setTimeout(async () => {
-      const reaction = await sendProactiveSystemMessage(`O usuário registrou: ${rawText}`);
-      if (reaction) {
-        const mood = t.tipo === 'receita' ? 'happy' : 'sad';
-        piggyPopup.show(reaction, mood);
-      }
-    }, 1000);
+      const reaction = await sendProactiveSystemMessage(`O usuário registrou: ${raw}`);
+      if (reaction) piggyPopup.show(reaction, t.tipo === 'receita' ? 'happy' : 'sad');
+    }, 1200);
+  };
+
+  const handleMic = () => {
+    if (isListening || !isSTTSupported()) return;
+    startListening({
+      onStart: () => setIsListening(true),
+      onResult: (transcript) => {
+        setText(transcript);
+        setTimeout(() => submit(transcript), 300);
+      },
+      onEnd: () => setIsListening(false),
+      onError: () => setIsListening(false),
+    });
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card p-4"
+      className="quiet-card p-5"
     >
-      {/* Botões de Ação Rápida */}
-      <div className="flex gap-2 overflow-x-auto pb-3 mb-1 no-scrollbar w-full">
-        <button 
-          onClick={() => handleShortcut("gastei 35 com ifood")}
-          className="whitespace-nowrap px-3 py-1.5 bg-muted/60 hover:bg-primary/20 text-foreground text-xs font-medium rounded-full border border-border/50 transition-colors flex items-center gap-1"
-        >
-          🍕 iFood R$35
-        </button>
-        <button 
-          onClick={() => handleShortcut("gastei 15 com uber")}
-          className="whitespace-nowrap px-3 py-1.5 bg-muted/60 hover:bg-primary/20 text-foreground text-xs font-medium rounded-full border border-border/50 transition-colors flex items-center gap-1"
-        >
-          🚗 Uber R$15
-        </button>
-        <button 
-          onClick={() => handleShortcut("gastei 8 com café")}
-          className="whitespace-nowrap px-3 py-1.5 bg-muted/60 hover:bg-primary/20 text-foreground text-xs font-medium rounded-full border border-border/50 transition-colors flex items-center gap-1"
-        >
-          ☕ Café R$8
-        </button>
-        <button 
-          onClick={() => handleShortcut("recebi 100 de pix")}
-          className="whitespace-nowrap px-3 py-1.5 bg-muted/60 hover:bg-green-500/20 text-green-400 text-xs font-medium rounded-full border border-border/50 transition-colors flex items-center gap-1"
-        >
-          💰 Pix +R$100
-        </button>
-      </div>
+      <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-3">
+        Nova Transação
+      </p>
 
-      <div className="flex gap-2 relative">
+      {/* Input principal estilo pílula */}
+      <div className="relative flex items-center gap-2 bg-muted/40 rounded-full border border-border/40 pl-5 pr-1 py-1 mb-3">
         <input
           type="text"
           value={text}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          placeholder={isListening ? '🎤 Ouvindo... Fale agora!' : 'Ex: gastei 25 com mercado'}
-          className={`flex-1 bg-muted/30 text-foreground placeholder-muted-foreground rounded-full pl-4 pr-24 py-3 text-sm outline-none border transition-all shadow-sm ${isListening ? 'border-red-500 bg-red-500/10 animate-pulse' : 'border-border/50 focus:border-primary/50'}`}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit(text)}
+          placeholder={isListening ? '🎤 Ouvindo…' : 'ex: 50 mercado'}
+          className="flex-1 bg-transparent text-foreground placeholder-muted-foreground/60 py-2.5 text-[15px] outline-none"
         />
-        <div className="absolute right-1 top-1 flex gap-1">
+        <button
+          onClick={handleMic}
+          className={`p-2.5 rounded-full transition-all ${
+            isListening
+              ? 'bg-destructive text-destructive-foreground animate-pulse'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          }`}
+          aria-label="Falar"
+        >
+          {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+        </button>
+        <button
+          onClick={() => submit(text)}
+          disabled={!text.trim()}
+          className="p-2.5 rounded-full gradient-primary text-primary-foreground disabled:opacity-30 transition-opacity"
+          aria-label="Confirmar"
+        >
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Atalhos */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        {SHORTCUTS.map((s) => (
           <button
-            onClick={handleMicrophone}
-            className={`p-2 rounded-full transition-colors ${isListening ? 'bg-red-500 text-white animate-pulse' : 'text-muted-foreground hover:bg-muted/80'}`}
+            key={s.label}
+            onClick={() => submit(s.text)}
+            className="whitespace-nowrap px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/30 transition-colors"
           >
-            {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            {s.label}
           </button>
-          <button
-            id="btn-send-tx"
-            onClick={handleSubmit}
-            className="p-2 rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
-          >
-            <Send className="w-4 h-4 ml-0.5" />
-          </button>
-        </div>
+        ))}
       </div>
     </motion.div>
   );

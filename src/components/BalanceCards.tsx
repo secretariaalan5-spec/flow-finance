@@ -1,58 +1,86 @@
 import { motion } from 'framer-motion';
 import { useTransactions } from '@/hooks/useTransactions';
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, TrendingUp } from 'lucide-react';
 
 function formatCurrency(v: number) {
-  return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formatted = Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const [int, dec] = formatted.split(',');
+  return { int: `${v < 0 ? '-' : ''}${int}`, dec };
 }
 
 export default function BalanceCards() {
   const { balance, totalIncome, totalExpense } = useTransactions();
+  const monthName = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const isHealthy = balance >= 0 && totalIncome >= totalExpense;
 
-  const cards = [
-    { label: 'Saldo Atual', value: balance, icon: Wallet, gradient: 'gradient-accent' },
-    { label: 'Receitas', value: totalIncome, icon: TrendingUp, gradient: 'gradient-income' },
-    { label: 'Despesas', value: totalExpense, icon: TrendingDown, gradient: 'gradient-expense' },
-  ];
+  const main = formatCurrency(balance);
+  const inc = formatCurrency(totalIncome);
+  const exp = formatCurrency(totalExpense);
 
   return (
-    <div className="grid grid-cols-1 gap-3">
-      {/* Main balance */}
+    <div className="space-y-3">
+      {/* Saldo principal — estilo editorial */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="gradient-accent rounded-2xl p-5 text-primary-foreground"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="quiet-card p-6"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-sm opacity-80">Saldo Atual</p>
-            <p className="text-3xl font-heading font-bold mt-1">{formatCurrency(balance)}</p>
+            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">Saldo Atual</p>
+            <p className="text-[10px] text-muted-foreground/70 capitalize mt-0.5">{monthName}</p>
           </div>
-          <Wallet className="w-10 h-10 opacity-50" />
+          {isHealthy && (
+            <span className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-primary font-semibold bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
+              <TrendingUp className="w-3 h-3" /> Saudável
+            </span>
+          )}
+        </div>
+        <div className="flex items-baseline gap-1">
+          <span className="text-xs text-muted-foreground">R$</span>
+          <span className="number-display text-5xl font-normal text-foreground">{main.int}</span>
+          <span className="number-display text-xl text-muted-foreground">,{main.dec}</span>
         </div>
       </motion.div>
 
-      {/* Income / Expense */}
+      {/* Receitas e Despesas */}
       <div className="grid grid-cols-2 gap-3">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
+          initial={{ opacity: 0, x: -12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.1 }}
-          className="gradient-income rounded-2xl p-4 text-primary-foreground"
+          className="quiet-card p-4"
         >
-          <TrendingUp className="w-5 h-5 opacity-70 mb-2" />
-          <p className="text-xs opacity-80">Receitas</p>
-          <p className="text-lg font-heading font-bold">{formatCurrency(totalIncome)}</p>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">Receitas</span>
+            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+              <ArrowDownRight className="w-3.5 h-3.5 text-primary" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-[10px] text-muted-foreground">R$</span>
+            <span className="number-display text-2xl text-foreground">{inc.int}</span>
+            <span className="number-display text-xs text-muted-foreground">,{inc.dec}</span>
+          </div>
         </motion.div>
+
         <motion.div
-          initial={{ opacity: 0, x: 20 }}
+          initial={{ opacity: 0, x: 12 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.15 }}
-          className="gradient-expense rounded-2xl p-4 text-primary-foreground"
+          className="quiet-card p-4"
         >
-          <TrendingDown className="w-5 h-5 opacity-70 mb-2" />
-          <p className="text-xs opacity-80">Despesas</p>
-          <p className="text-lg font-heading font-bold">{formatCurrency(totalExpense)}</p>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">Despesas</span>
+            <div className="w-7 h-7 rounded-full bg-destructive/10 flex items-center justify-center">
+              <ArrowUpRight className="w-3.5 h-3.5 text-destructive" />
+            </div>
+          </div>
+          <div className="flex items-baseline gap-0.5">
+            <span className="text-[10px] text-muted-foreground">R$</span>
+            <span className="number-display text-2xl text-foreground">{exp.int}</span>
+            <span className="number-display text-xs text-muted-foreground">,{exp.dec}</span>
+          </div>
         </motion.div>
       </div>
     </div>
