@@ -60,6 +60,20 @@ export default function PiggyAvatar({ mood = "idle", isSpeaking = false, classNa
     surprised: { rotate: -30, y: -8 },
   };
 
+  const earAnim: Variants = {
+    idle: { rotate: [0, 8, 0, -4, 0], transition: { duration: 2.2, repeat: Infinity, ease: "easeInOut" } },
+    happy: { rotate: [0, 18, 0, -10, 0], transition: { duration: 0.5, repeat: Infinity } },
+    sad: { rotate: -8 },
+    surprised: { rotate: [0, -15, 15, 0], transition: { duration: 0.4, repeat: Infinity } },
+  };
+
+  const tailAnim: Variants = {
+    idle: { rotate: [0, 25, 0, -15, 0], transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" } },
+    happy: { rotate: [0, 45, -10, 50, 0], transition: { duration: 0.4, repeat: Infinity } },
+    sad: { rotate: -10 },
+    surprised: { rotate: [0, 30, -20, 0], transition: { duration: 0.5, repeat: Infinity } },
+  };
+
   return (
     <motion.div
       className={`relative w-full aspect-square flex items-center justify-center ${className}`}
@@ -87,8 +101,16 @@ export default function PiggyAvatar({ mood = "idle", isSpeaking = false, classNa
         <ellipse cx="65" cy="175" rx="14" ry="20" fill="url(#legGrad)" />
         <ellipse cx="135" cy="175" rx="14" ry="20" fill="url(#legGrad)" />
 
-        <path d="M 35 75 L 22 18 L 85 45 Z" fill="url(#bodyGrad)" />
-        <path d="M 165 75 L 178 18 L 115 45 Z" fill="url(#bodyGrad)" />
+        <motion.g variants={tailAnim} animate={mood} style={{ originX: "180px", originY: "110px" }}>
+          <path d="M 175 105 Q 195 100 198 115 Q 200 128 188 130" fill="none" stroke="#A85F85" strokeWidth="5" strokeLinecap="round" />
+        </motion.g>
+
+        <motion.g variants={earAnim} animate={mood} style={{ originX: "55px", originY: "55px" }}>
+          <path d="M 35 75 L 22 18 L 85 45 Z" fill="url(#bodyGrad)" />
+        </motion.g>
+        <motion.g variants={earAnim} animate={mood} style={{ originX: "145px", originY: "55px" }}>
+          <path d="M 165 75 L 178 18 L 115 45 Z" fill="url(#bodyGrad)" />
+        </motion.g>
 
         <circle cx="100" cy="100" r="78" fill="url(#bodyGrad)" />
         <path d="M 22 100 A 78 78 0 0 0 178 100 A 82 78 0 0 1 22 100 Z" fill="#7A2655" opacity="0.12" />
