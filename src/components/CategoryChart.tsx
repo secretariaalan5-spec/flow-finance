@@ -2,16 +2,30 @@ import { motion } from 'framer-motion';
 import { useTransactions } from '@/hooks/useTransactions';
 import { getCategoryEmoji } from '@/lib/categories';
 
-const SHADES = [
-  'hsl(145 45% 38%)',
-  'hsl(145 35% 50%)',
-  'hsl(42 50% 58%)',
-  'hsl(35 40% 50%)',
-  'hsl(150 25% 28%)',
-  'hsl(8 50% 55%)',
-  'hsl(180 30% 40%)',
-  'hsl(60 25% 55%)',
+// Paleta vibrante — uma cor por categoria
+const CATEGORY_COLORS: Record<string, string> = {
+  'Alimentação': 'hsl(15 80% 58%)',
+  'Transporte':  'hsl(220 70% 60%)',
+  'Mercado':     'hsl(145 55% 45%)',
+  'Moradia':     'hsl(265 55% 60%)',
+  'Contas':      'hsl(45 85% 55%)',
+  'Lazer':       'hsl(330 70% 60%)',
+  'Compras':     'hsl(195 70% 50%)',
+  'Saúde':       'hsl(170 60% 45%)',
+  'Educação':    'hsl(280 55% 55%)',
+  'Assinaturas': 'hsl(25 80% 55%)',
+  'Outros':      'hsl(220 10% 55%)',
+};
+
+const FALLBACK_SHADES = [
+  'hsl(15 80% 58%)', 'hsl(220 70% 60%)', 'hsl(145 55% 45%)',
+  'hsl(265 55% 60%)', 'hsl(45 85% 55%)', 'hsl(330 70% 60%)',
+  'hsl(195 70% 50%)', 'hsl(170 60% 45%)',
 ];
+
+function colorFor(name: string, idx: number) {
+  return CATEGORY_COLORS[name] ?? FALLBACK_SHADES[idx % FALLBACK_SHADES.length];
+}
 
 function formatCurrency(v: number) {
   return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -52,30 +66,34 @@ export default function CategoryChart() {
       </div>
 
       {/* Barra horizontal segmentada */}
-      <div className="flex w-full h-2.5 rounded-full overflow-hidden mb-5 bg-muted/30">
+      <div className="flex w-full h-3 rounded-full overflow-hidden mb-5 bg-muted/30 shadow-inner">
         {entries.map(([name, value], i) => (
           <div
             key={name}
-            style={{ width: `${(value / total) * 100}%`, background: SHADES[i % SHADES.length] }}
+            style={{ width: `${(value / total) * 100}%`, background: colorFor(name, i) }}
             title={`${name}: R$ ${formatCurrency(value)}`}
           />
         ))}
       </div>
 
-      {/* Lista de categorias */}
-      <div className="space-y-3">
+      {/* Lista de categorias coloridas */}
+      <div className="space-y-2.5">
         {entries.slice(0, 5).map(([name, value], i) => {
           const pct = ((value / total) * 100).toFixed(0);
+          const color = colorFor(name, i);
           return (
             <div key={name} className="flex items-center gap-3">
-              <span
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                style={{ background: SHADES[i % SHADES.length] }}
-              />
-              <span className="text-sm flex-1 text-foreground">
-                {getCategoryEmoji(name)} {name}
-              </span>
-              <span className="text-[11px] text-muted-foreground tabular-nums">{pct}%</span>
+              <div
+                className="w-9 h-9 rounded-2xl flex items-center justify-center text-base flex-shrink-0"
+                style={{
+                  background: color.replace(')', ' / 0.15)'),
+                  border: `1px solid ${color.replace(')', ' / 0.35)')}`,
+                }}
+              >
+                <span>{getCategoryEmoji(name)}</span>
+              </div>
+              <span className="text-sm flex-1 text-foreground font-medium">{name}</span>
+              <span className="text-[10px] text-muted-foreground tabular-nums font-semibold">{pct}%</span>
               <span className="number-display text-sm text-foreground tabular-nums w-20 text-right">
                 {formatCurrency(value)}
               </span>
