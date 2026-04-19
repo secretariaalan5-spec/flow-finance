@@ -37,7 +37,7 @@ interface Props {
 }
 
 export default function TransactionList({ limit, showFilters = false }: Props) {
-  const { transactions, remove } = useTransactions();
+  const { transactions, remove, loading } = useTransactions();
   const [filterType, setFilterType] = useState<'todos' | 'receita' | 'despesa'>('todos');
   const [filterCat, setFilterCat] = useState('todos');
 
@@ -47,6 +47,21 @@ export default function TransactionList({ limit, showFilters = false }: Props) {
 
   const display = limit ? filtered.slice(0, limit) : filtered;
   const categories = [...new Set(transactions.map((t) => t.categoria))];
+
+  // Skeleton de carregamento
+  if (loading && transactions.length === 0) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: limit ?? 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-[68px] rounded-[1.25rem] bg-muted/30 animate-pulse"
+            style={{ animationDelay: `${i * 80}ms` }}
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div>

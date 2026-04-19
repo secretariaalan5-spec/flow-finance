@@ -14,7 +14,7 @@ function formatShort(v: number) {
 }
 
 export default function BalanceCards() {
-  const { balance, totalIncome, totalExpense, currentMonth } = useTransactions();
+  const { balance, totalIncome, totalExpense, currentMonth, loading } = useTransactions();
   const monthName = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const isHealthy = balance >= 0;
 
@@ -25,6 +25,19 @@ export default function BalanceCards() {
   const expenseCount = currentMonth.filter(t => t.tipo === 'despesa').length;
 
   const main = formatCurrency(balance);
+
+  // Skeleton de loading
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <div className="h-48 rounded-[2rem] bg-muted/30 animate-pulse" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="h-28 rounded-[1.5rem] bg-muted/30 animate-pulse" />
+          <div className="h-28 rounded-[1.5rem] bg-muted/30 animate-pulse" style={{ animationDelay: '80ms' }} />
+        </div>
+      </div>
+    );
+  }
 
   const healthColor = isHealthy
     ? 'linear-gradient(145deg, hsl(150 58% 26%) 0%, hsl(155 65% 20%) 60%, hsl(160 55% 14%) 100%)'

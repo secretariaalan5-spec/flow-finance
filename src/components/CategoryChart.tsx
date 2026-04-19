@@ -68,9 +68,12 @@ export default function CategoryChart() {
       {/* Barra horizontal segmentada */}
       <div className="flex w-full h-3 rounded-full overflow-hidden mb-5 bg-muted/30 shadow-inner">
         {entries.map(([name, value], i) => (
-          <div
+          <motion.div
             key={name}
-            style={{ width: `${(value / total) * 100}%`, background: colorFor(name, i) }}
+            initial={{ width: 0 }}
+            animate={{ width: `${(value / total) * 100}%` }}
+            transition={{ duration: 0.8, delay: 0.3 + (i * 0.1), ease: [0.22, 1, 0.36, 1] }}
+            style={{ background: colorFor(name, i) }}
             title={`${name}: R$ ${formatCurrency(value)}`}
           />
         ))}

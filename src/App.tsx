@@ -5,6 +5,7 @@ import { PiggyPopupProvider } from "@/components/PiggyPopup";
 import { PiggyEffectsProvider } from "@/components/PiggyEffects";
 import { ThemeProvider } from "@/lib/theme";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import OfflineBanner from "@/components/OfflineBanner";
 import Index from "./pages/Index.tsx";
 import AuthPage from "./pages/AuthPage.tsx";
@@ -45,19 +46,21 @@ function AppRoutes() {
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <ThemeProvider>
-        <TooltipProvider>
-          <PiggyEffectsProvider>
-            <PiggyPopupProvider>
-              <AppRoutes />
-            </PiggyPopupProvider>
-          </PiggyEffectsProvider>
-        </TooltipProvider>
-      </ThemeProvider>
-    </AuthProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider>
+          <TooltipProvider>
+            <PiggyEffectsProvider>
+              <PiggyPopupProvider>
+                <AppRoutes />
+              </PiggyPopupProvider>
+            </PiggyEffectsProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;

@@ -26,7 +26,7 @@ export default function OfflineBanner() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -60, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed top-0 left-0 right-0 z-50 flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold"
+          className="fixed top-0 inset-x-0 mx-auto max-w-lg z-50 flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold"
           style={{
             background: !isOnline
               ? 'hsl(15 85% 40%)'

@@ -139,7 +139,10 @@ export default function Index() {
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
 
   return (
-    <div className="h-screen w-full max-w-lg mx-auto flex flex-col relative overflow-hidden">
+    <div
+      className="w-full max-w-lg mx-auto flex flex-col relative"
+      style={{ height: '100dvh' }}
+    >
       {/* HEADER MOBILE — sticky, com avatar + saudação */}
       {tab !== 'chat' && (
         <header className="safe-top px-5 pb-3 flex items-center justify-between flex-shrink-0 z-20">
@@ -187,7 +190,7 @@ export default function Index() {
       )}
 
       {/* CONTEÚDO SCROLLÁVEL */}
-      <main className="flex-1 relative overflow-hidden">
+      <main className="flex-1 min-h-0 relative overflow-hidden">
         <AnimatePresence mode="wait">
           {tab === 'dashboard' && (
             <motion.div
@@ -196,7 +199,7 @@ export default function Index() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
-              className="h-full"
+              className="absolute inset-0"
             >
               <PullToRefresh
                 onRefresh={async () => {
@@ -235,11 +238,11 @@ export default function Index() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
-              className="h-full app-scroll px-5 pb-32"
+              className="absolute inset-0 app-scroll px-5 pb-32 pt-4"
             >
-              <h2 className="font-display text-4xl text-foreground mb-1 leading-none">Histórico</h2>
-              <p className="text-sm text-muted-foreground mb-5">Todas as suas transações.</p>
-              <p className="text-[11px] text-muted-foreground/70 mb-3">💡 Arraste pra esquerda pra excluir</p>
+              <h2 className="font-display text-3xl font-bold text-foreground mb-1 leading-none">Histórico</h2>
+              <p className="text-sm text-muted-foreground mb-2">Todas as suas transações.</p>
+              <p className="text-[11px] text-muted-foreground/70 mb-4">💡 Arraste pra esquerda pra excluir</p>
               <TransactionList showFilters />
             </motion.div>
           )}
@@ -251,7 +254,7 @@ export default function Index() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
-              className="h-full app-scroll px-5 pb-32 pt-2"
+              className="absolute inset-0 app-scroll px-5 pb-32 pt-4"
             >
               <BudgetsScreen />
             </motion.div>
@@ -263,7 +266,7 @@ export default function Index() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="h-[calc(100vh-9rem)]"
+              className="absolute inset-0"
             >
               <PiggyChat />
             </motion.div>
