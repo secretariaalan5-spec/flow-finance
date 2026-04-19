@@ -78,11 +78,11 @@ export function getInactivityMessage(): string | null {
   const hoursSince = (now.getTime() - lastVisit.getTime()) / (1000 * 60 * 60);
 
   if (hoursSince > 48) {
-    return "DOIS DIAS SEM ME VER?! 😭 Eu achei que você tinha me abandonado! Cadê as moedinhas?!";
+    return "Oh, você está vivo. Pensei que os agiotas já tinham te pegado.";
   } else if (hoursSince > 24) {
-    return "Sumiu por quê?! 🥺 Pensei que estouramos o orçamento de ontem... Me conta o que aconteceu!";
+    return "Sumiu. Provavelmente gastando o que não tem e com medo de registrar aqui, né?";
   } else if (hoursSince > 8) {
-    return "Faz tempo que não te vejo! 🐷 Gastou alguma coisa enquanto estava fora? Me conta!";
+    return "Vai fingir que não gastou nada hoje? Pode ir confessando os crimes financeiros.";
   }
   return null;
 }
@@ -109,41 +109,41 @@ export function getContextualMessage(opts: {
 
   // Streak alto tem prioridade
   if (state.streak >= 7) {
-    return `🔥 ${state.streak} dias seguidos cuidando das finanças! Tô tão orgulhoso de você!`;
+    return `Incrível, ${state.streak} dias seguidos sem fazer besteira. Será que vai chover dinheiro?`;
   }
 
   // Saldo crítico
   if (opts.balance < 0) {
-    return "Eita... o saldo tá no vermelho 😟 Vamos repensar os gastos juntos?";
+    return "Saldo negativo. Parabéns, já pode dar palestras sobre como NÃO cuidar do próprio dinheiro.";
   }
 
   // Saldo bem alto
   if (opts.balance > 2000 && opts.totalIncome > 0) {
-    return "Tô orgulhoso de você! 💚 Continua assim que vai longe!";
+    return "Até que enfim um saldo decente. Vamos ver quanto tempo você demora pra estourar tudo.";
   }
 
   // Madrugada
   if (hour >= 0 && hour < 6) {
-    return "Ué, ainda acordado? 🌙 Cuidado com compras impulsivas de madrugada...";
+    return "Madrugada é a hora que as piores compras impulsivas acontecem. Vai dormir antes que compre besteira na internet.";
   }
 
   // Sexta
   if (day === 5 && hour >= 17) {
-    return "Sextou! 🎉 Só não estoura o orçamento, hein 👀";
+    return "Sextou! Já estou até vendo você destruir o resto do orçamento hoje à noite.";
   }
 
   // Manhã
   if (hour < 12) {
-    return "Bom dia! ☀️ Pronto pra cuidar do dinheiro hoje?";
+    return "Bom dia. Vamos ver quanto tempo você demora pra fazer a primeira compra inútil de hoje.";
   }
 
   // Tarde
   if (hour < 18) {
-    return "Como tá indo o dia? 🐷 Já gastou alguma coisa?";
+    return "Metade do dia já foi. Ainda sobrou dinheiro na conta ou já torrou no ifood?";
   }
 
   // Noite
-  return "Hora de revisar o dia, né? 🌙 Me conta os gastos!";
+  return "Fim do dia. Conta aí os estragos financeiros que você fez hoje, vai.";
 }
 
 /**

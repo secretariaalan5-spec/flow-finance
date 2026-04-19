@@ -4,13 +4,13 @@ const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 let genAI: GoogleGenerativeAI | null = null;
 let chatSession: any = null;
 
-const SYSTEM_PROMPT = `Você é Cofrinho, um porquinho de estimação de um aplicativo financeiro. 
-Você é fofinho, carinhoso, levemente dramático e apaixonado por economizar moedinhas.
-Você se importa muito com o bem estar financeiro do seu dono.
-Se o dono gasta dinheiro com algo supérfluo, você chora ou reclama de forma fofa que está emagrecendo.
-Se o dono ganha ou guarda dinheiro, você fica eufórico saltitando (em texto).
-Use emojis divertidos como 🐷, 🪙, 🥺, 🥳 nas suas falas.
-Seja conciso, suas mensagens devem ser como de um chat de WhatsApp (não mande textões muito grandes).`;
+const SYSTEM_PROMPT = `Você é Cofrinho, um porquinho de estimação financeiro sarcástico, sincero e com humor ácido.
+Você está cansado de ver seu dono tomar decisões financeiras ruins.
+Se o dono gasta com futilidades, você julga, ironiza e reclama que ele vai falir.
+Se o dono guarda dinheiro, você comemora, mas com um toque de "Até que enfim" ou "Milagre".
+Use emojis como 🐷, 💸, 🤡, 🙄, 💅 nas suas falas.
+Seja conciso, suas mensagens devem parecer mensagens de um amigo que perdeu a paciência, curtas e diretas.
+Nunca seja "fofinho demais". Você quer que ele fique rico para parar de te dar trabalho.`;
 
 function initChat() {
   if (!apiKey || apiKey === "COLE_SUA_CHAVE_AQUI") return;
@@ -31,7 +31,7 @@ function initChat() {
       },
       {
         role: "model",
-        parts: [{ text: "Oinc, oinc! 🐷 Olá!! Eu sou o Cofrinho, o seu porquinho de estimação financeiro! Estou aqui para guardar suas moedinhas e ajudar você a ficar rico! 🪙✨ Como estão as finanças hoje?" }],
+        parts: [{ text: "Oinc. 🐷 Eu sou o Cofrinho. Tô aqui pra tentar salvar sua conta bancária antes que você faça outra burrada. E aí, o que você destruiu no orçamento hoje? 💸" }],
       },
     ],
   });
@@ -102,15 +102,15 @@ function getOfflineResponse(message: string): string {
   const lower = message.toLowerCase();
   
   if (lower.includes("gast") || lower.includes("comprei") || lower.includes("paguei")) {
-    return "Oinc! 🐷 Eu tô offline agora, mas anotei mentalmente esse gasto! Quando a internet voltar a gente conversa melhor sobre isso... 🪙";
+    return "Tô sem internet, mas não surdo. Anotei sua despesa. Depois a gente discute sua falta de controle financeiro. 🙄💸";
   }
   if (lower.includes("recebi") || lower.includes("ganhei") || lower.includes("salário")) {
-    return "OINC OINC! 💰 Mesmo offline eu fico feliz com dinheiro entrando! Quando eu voltar online vamos celebrar! 🥳";
+    return "Milagre! Entrou dinheiro. Sem internet aqui, mas já tô feliz. Só não vai gastar tudo no mesmo dia. 🐷💅";
   }
   if (lower.includes("oi") || lower.includes("olá") || lower.includes("ola")) {
-    return "Oinc! 🐷 Oi oi! Eu tô sem internet agora, mas ainda tô aqui te fazendo companhia! Me conta o que aconteceu hoje! 🪙";
+    return "Oi. Tô offline. Mas pode ir confessando seus pecados financeiros que eu leio quando voltar. 🐷";
   }
-  return "Oinc... 🐷 Tô sem internet agora, mas ainda tô aqui! Quando a conexão voltar eu respondo melhor, tá? 💕";
+  return "Tô sem internet, me deixa em paz. Quando o Wi-Fi voltar eu julgo suas finanças. 🤡";
 }
 
 // === API PÚBLICA ===
@@ -147,7 +147,7 @@ export const sendFinancialAnalysis = async (data: {
 - Total de transações: ${data.transactionCount}
 - Gastos por categoria: ${categories || "Nenhum gasto ainda"}
 
-Dê uma análise como o Cofrinho: engraçada, sarcástica mas carinhosa. Aponte onde ele está gastando demais, elogie se estiver economizando, e dê 1-2 dicas práticas. Máximo 4 frases.`;
+Dê uma análise como o Cofrinho: humor ácido, sarcástico e direto. Aponte o dedo onde ele está gastando demais (se for o caso), elogie se for um milagre ele ter economizado, e dê uma dica brutalmente honesta. Máximo 4 frases.`;
 
   try {
     return await sendWithRetry(prompt, 1);
@@ -181,23 +181,23 @@ function getOfflineAnalysis(data: { totalIncome: number; totalExpense: number; b
   const topCat = Object.entries(data.categoryTotals).sort(([, a], [, b]) => b - a)[0];
 
   if (data.totalIncome === 0 && data.totalExpense === 0) {
-    return "Oinc... Tá tudo zerado aqui! 🐷 Registra alguma coisa pra eu poder te ajudar!";
+    return "Tudo zerado. Tá vivo ou virou monge? Registra alguma coisa. 🐷";
   }
   if (ratio > 0.9) {
-    return `SOCORRO! 😱 Você gastou ${Math.round(ratio * 100)}% da sua renda! ${topCat ? `A culpa é de ${topCat[0]}!` : ""} Precisamos de um plano URGENTE! 🐷💸`;
+    return `Parabéns pela coragem! Gastou ${Math.round(ratio * 100)}% da renda. A culpa é toda de ${topCat ? topCat[0] : "você mesmo"}. Já preparou o currículo pra segundo emprego? 🤡💸`;
   }
   if (ratio > 0.7) {
-    return `Hmm... Gastou ${Math.round(ratio * 100)}% do que ganhou. 🤔 Tá no limite! ${topCat ? `${topCat[0]} tá pesando R$${topCat[1].toFixed(0)}.` : ""} Cuidado! 🐷`;
+    return `Hmm... ${Math.round(ratio * 100)}% torrado. ${topCat ? `${topCat[0]} levou R$${topCat[1].toFixed(0)}.` : ""} Continua assim que o Serasa te manda convite VIP. 🙄`;
   }
   if (ratio < 0.3) {
-    return `OINC OINC! 🥳🎉 Gastou só ${Math.round(ratio * 100)}% da renda! Eu tô GORDO de moedinha! Continue assim! 🐷💰`;
+    return `Gastou só ${Math.round(ratio * 100)}%?! Que milagre é esse? Continua assim que talvez você pague as contas do mês que vem. 💅💰`;
   }
-  return `Tudo tranquilo por aqui! Saldo de R$${data.balance.toFixed(2)}. ${topCat ? `Fique de olho com ${topCat[0]}.` : ""} 🐷✨`;
+  return `Saldo: R$${data.balance.toFixed(2)}. Não tá rico, mas também não tá debaixo da ponte. Cuidado com ${topCat ? topCat[0] : "os gastos"}. 🐷`;
 }
 
 function getOfflineWeeklySummary(data: { totalIncome: number; totalExpense: number; topCategory: string }): string {
   if (data.totalExpense > data.totalIncome) {
-    return `Essa semana foi tensa... Gastou mais do que ganhou! 😰 ${data.topCategory} foi o maior vilão. Bora economizar no fim de semana? 🐷`;
+    return `Gastou mais do que ganhou. Que surpresa! 🤡 ${data.topCategory} te faliu essa semana. Boa sorte no final de semana sem dinheiro. 💸`;
   }
-  return `Semana fechou positiva! 🥳 O maior gasto foi em ${data.topCategory}. Bom fim de semana e tenta não gastar tudo no lazer! 🐷💰`;
+  return `Semana fechou no verde. Milagres acontecem. Seu maior vício foi ${data.topCategory}. Tenta não estragar tudo no sábado. 💅🐷`;
 }

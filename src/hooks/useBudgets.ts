@@ -72,5 +72,14 @@ export function useBudgets() {
   const exceeded  = budgetStatuses.filter(b => b.status === 'exceeded');
   const warnings  = budgetStatuses.filter(b => b.status === 'warning');
 
+  // Dispara push notifications limitadas para limites estourados
+  useEffect(() => {
+    exceeded.forEach(b => {
+      import('@/lib/notifications').then(({ notifyBudgetExceeded }) => {
+        notifyBudgetExceeded(b.categoria);
+      });
+    });
+  }, [JSON.stringify(exceeded.map(e => e.categoria))]);
+
   return { budgets, budgetStatuses, exceeded, warnings, loading, upsert, remove, refetch: fetchBudgets };
 }

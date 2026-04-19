@@ -71,6 +71,11 @@ export default function Index() {
       const mood: PiggyMood = balance < 0 ? 'sad' : balance > 2000 ? 'happy' : 'idle';
       setTimeout(() => piggyPopup.show(msg, mood), 1800);
     }
+    // Solicita permissão de notificação (o limiter já garante não spammar)
+    import('@/lib/notifications').then(({ requestNotificationPermission }) => {
+      requestNotificationPermission();
+    });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
