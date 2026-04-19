@@ -66,30 +66,34 @@ export default function CategoryChart() {
       </div>
 
       {/* Barra horizontal segmentada */}
-      <div className="flex w-full h-2.5 rounded-full overflow-hidden mb-5 bg-muted/30">
+      <div className="flex w-full h-3 rounded-full overflow-hidden mb-5 bg-muted/30 shadow-inner">
         {entries.map(([name, value], i) => (
           <div
             key={name}
-            style={{ width: `${(value / total) * 100}%`, background: SHADES[i % SHADES.length] }}
+            style={{ width: `${(value / total) * 100}%`, background: colorFor(name, i) }}
             title={`${name}: R$ ${formatCurrency(value)}`}
           />
         ))}
       </div>
 
-      {/* Lista de categorias */}
-      <div className="space-y-3">
+      {/* Lista de categorias coloridas */}
+      <div className="space-y-2.5">
         {entries.slice(0, 5).map(([name, value], i) => {
           const pct = ((value / total) * 100).toFixed(0);
+          const color = colorFor(name, i);
           return (
             <div key={name} className="flex items-center gap-3">
-              <span
-                className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                style={{ background: SHADES[i % SHADES.length] }}
-              />
-              <span className="text-sm flex-1 text-foreground">
-                {getCategoryEmoji(name)} {name}
-              </span>
-              <span className="text-[11px] text-muted-foreground tabular-nums">{pct}%</span>
+              <div
+                className="w-9 h-9 rounded-2xl flex items-center justify-center text-base flex-shrink-0"
+                style={{
+                  background: color.replace(')', ' / 0.15)'),
+                  border: `1px solid ${color.replace(')', ' / 0.35)')}`,
+                }}
+              >
+                <span>{getCategoryEmoji(name)}</span>
+              </div>
+              <span className="text-sm flex-1 text-foreground font-medium">{name}</span>
+              <span className="text-[10px] text-muted-foreground tabular-nums font-semibold">{pct}%</span>
               <span className="number-display text-sm text-foreground tabular-nums w-20 text-right">
                 {formatCurrency(value)}
               </span>
