@@ -10,10 +10,30 @@ interface PiggyAvatarProps {
 
 export default function PiggyAvatar({ mood = "idle", isSpeaking = false, className = "" }: PiggyAvatarProps) {
   const bodyAnim: Variants = {
-    idle: { y: [0, -4, 0], scaleX: [1, 1.02, 1], scaleY: [1, 0.98, 1], transition: { duration: 2.5, repeat: Infinity, ease: "easeInOut" } },
-    happy: { y: [0, -12, 0], scaleY: [1, 1.05, 1], transition: { duration: 0.6, repeat: Infinity, ease: "easeInOut" } },
-    sad: { y: [0, 4, 0], scaleY: [1, 0.94, 1], transition: { duration: 3, repeat: Infinity, ease: "easeInOut" } },
-    surprised: { y: -6, transition: { type: "spring", stiffness: 300, damping: 10 } },
+    idle: {
+      y: [0, -6, 0, -3, 0],
+      rotate: [0, -2, 0, 2, 0],
+      scaleX: [1, 1.03, 1, 1.02, 1],
+      scaleY: [1, 0.97, 1, 0.98, 1],
+      transition: { duration: 2.2, repeat: Infinity, ease: "easeInOut" },
+    },
+    happy: {
+      y: [0, -18, 0, -14, 0],
+      rotate: [0, -8, 0, 8, 0],
+      scaleY: [1, 1.08, 1, 1.06, 1],
+      transition: { duration: 0.5, repeat: Infinity, ease: "easeInOut" },
+    },
+    sad: {
+      y: [0, 5, 0],
+      rotate: [-3, -3, -3],
+      scaleY: [1, 0.92, 1],
+      transition: { duration: 2.8, repeat: Infinity, ease: "easeInOut" },
+    },
+    surprised: {
+      y: [-10, -6, -10],
+      scale: [1.1, 1.05, 1.1],
+      transition: { duration: 0.4, repeat: Infinity, ease: "easeInOut" },
+    },
   };
 
   const eyeScale = mood === "surprised" ? 1.3 : mood === "sad" ? 0.8 : 1;
