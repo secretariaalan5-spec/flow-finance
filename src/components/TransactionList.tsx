@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTransactions } from '@/hooks/useTransactions';
-import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { getCategoryEmoji } from '@/lib/categories';
+import SwipeableRow from './SwipeableRow';
 
 function formatCurrency(v: number) {
   return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -73,35 +73,32 @@ export default function TransactionList({ limit, showFilters = false }: Props) {
             {display.map((t, i) => (
               <motion.div
                 key={t.id}
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 16 }}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, height: 0 }}
                 transition={{ delay: i * 0.03 }}
-                className="flex items-center gap-3 p-4 group hover:bg-muted/20 transition-colors"
               >
-                <div className="w-11 h-11 rounded-2xl bg-muted/50 border border-border/30 flex items-center justify-center text-lg flex-shrink-0">
-                  {getCategoryEmoji(t.categoria)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground truncate">{t.descricao}</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {t.categoria} · {formatDate(t.data)}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`number-display text-lg ${t.tipo === 'receita' ? 'text-primary' : 'text-foreground'}`}>
-                    {t.tipo === 'receita' ? '+' : '−'}{formatCurrency(t.valor)}
-                  </span>
-                  <button
-                    onClick={() => {
-                      remove(t.id);
-                      toast('Transação removida');
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-destructive/15 text-destructive transition-all"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                <SwipeableRow
+                  onDelete={() => {
+                    remove(t.id);
+                    toast('Transação removida', { description: 'Arrastou e foi 👋' });
+                  }}
+                >
+                  <div className="flex items-center gap-3 p-4">
+                    <div className="w-11 h-11 rounded-2xl bg-muted/50 border border-border/30 flex items-center justify-center text-lg flex-shrink-0">
+                      {getCategoryEmoji(t.categoria)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{t.descricao}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {t.categoria} · {formatDate(t.data)}
+                      </p>
+                    </div>
+                    <span className={`number-display text-lg ${t.tipo === 'receita' ? 'text-primary' : 'text-foreground'}`}>
+                      {t.tipo === 'receita' ? '+' : '−'}{formatCurrency(t.valor)}
+                    </span>
+                  </div>
+                </SwipeableRow>
               </motion.div>
             ))}
           </AnimatePresence>
