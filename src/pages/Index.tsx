@@ -159,7 +159,7 @@ export default function Index() {
       )}
 
       {/* CONTEÚDO SCROLLÁVEL */}
-      <main className="flex-1 app-scroll px-5 pb-32">
+      <main className="flex-1 relative overflow-hidden">
         <AnimatePresence mode="wait">
           {tab === 'dashboard' && (
             <motion.div
@@ -168,24 +168,34 @@ export default function Index() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
-              className="space-y-5"
+              className="h-full"
             >
-              <BalanceCards />
-              <CategoryChart />
-              <div>
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">
-                    Atividade Recente
-                  </p>
-                  <button
-                    onClick={() => setTab('history')}
-                    className="text-[11px] uppercase tracking-wider text-primary font-semibold tap-scale"
-                  >
-                    Ver tudo
-                  </button>
+              <PullToRefresh
+                onRefresh={async () => {
+                  await new Promise((r) => setTimeout(r, 700));
+                  const msg = getContextualMessage({ balance, totalExpense, totalIncome });
+                  piggyPopup.show(msg, balance < 0 ? 'sad' : 'happy');
+                }}
+              >
+                <div className="px-5 pb-32 space-y-5">
+                  <BalanceCards />
+                  <CategoryChart />
+                  <div>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">
+                        Atividade Recente
+                      </p>
+                      <button
+                        onClick={() => { haptic('light'); setTab('history'); }}
+                        className="text-[11px] uppercase tracking-wider text-primary font-semibold tap-scale"
+                      >
+                        Ver tudo
+                      </button>
+                    </div>
+                    <TransactionList limit={5} />
+                  </div>
                 </div>
-                <TransactionList limit={5} />
-              </div>
+              </PullToRefresh>
             </motion.div>
           )}
 
@@ -196,10 +206,25 @@ export default function Index() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.25 }}
+              className="h-full app-scroll px-5 pb-32"
             >
               <h2 className="font-display text-4xl text-foreground mb-1 leading-none">Histórico</h2>
               <p className="text-sm text-muted-foreground mb-5">Todas as suas transações.</p>
+              <p className="text-[11px] text-muted-foreground/70 mb-3">💡 Arraste pra esquerda pra excluir</p>
               <TransactionList showFilters />
+            </motion.div>
+          )}
+
+          {tab === 'alerts' && (
+            <motion.div
+              key="alerts"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+              className="h-full app-scroll px-5 pb-32"
+            >
+              <AlertsScreen />
             </motion.div>
           )}
 
@@ -209,7 +234,7 @@ export default function Index() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="h-[calc(100vh-9rem)] -mx-5"
+              className="h-[calc(100vh-9rem)]"
             >
               <PiggyChat />
             </motion.div>
