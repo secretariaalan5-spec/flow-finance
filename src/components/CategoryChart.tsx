@@ -2,16 +2,30 @@ import { motion } from 'framer-motion';
 import { useTransactions } from '@/hooks/useTransactions';
 import { getCategoryEmoji } from '@/lib/categories';
 
-const SHADES = [
-  'hsl(145 45% 38%)',
-  'hsl(145 35% 50%)',
-  'hsl(42 50% 58%)',
-  'hsl(35 40% 50%)',
-  'hsl(150 25% 28%)',
-  'hsl(8 50% 55%)',
-  'hsl(180 30% 40%)',
-  'hsl(60 25% 55%)',
+// Paleta vibrante — uma cor por categoria
+const CATEGORY_COLORS: Record<string, string> = {
+  'Alimentação': 'hsl(15 80% 58%)',
+  'Transporte':  'hsl(220 70% 60%)',
+  'Mercado':     'hsl(145 55% 45%)',
+  'Moradia':     'hsl(265 55% 60%)',
+  'Contas':      'hsl(45 85% 55%)',
+  'Lazer':       'hsl(330 70% 60%)',
+  'Compras':     'hsl(195 70% 50%)',
+  'Saúde':       'hsl(170 60% 45%)',
+  'Educação':    'hsl(280 55% 55%)',
+  'Assinaturas': 'hsl(25 80% 55%)',
+  'Outros':      'hsl(220 10% 55%)',
+};
+
+const FALLBACK_SHADES = [
+  'hsl(15 80% 58%)', 'hsl(220 70% 60%)', 'hsl(145 55% 45%)',
+  'hsl(265 55% 60%)', 'hsl(45 85% 55%)', 'hsl(330 70% 60%)',
+  'hsl(195 70% 50%)', 'hsl(170 60% 45%)',
 ];
+
+function colorFor(name: string, idx: number) {
+  return CATEGORY_COLORS[name] ?? FALLBACK_SHADES[idx % FALLBACK_SHADES.length];
+}
 
 function formatCurrency(v: number) {
   return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
