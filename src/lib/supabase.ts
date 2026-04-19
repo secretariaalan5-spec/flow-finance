@@ -1,9 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseKey  = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL  as string | undefined;
+const supabaseKey  = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    '[Porquinho] Variáveis de ambiente do Supabase não encontradas.\n' +
+    'Adicione VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no painel da Vercel:\n' +
+    'Project Settings → Environment Variables'
+  );
+}
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
+
 
 export type Database = {
   public: {
