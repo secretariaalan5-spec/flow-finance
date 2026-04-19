@@ -9,13 +9,18 @@ import { recordTransaction } from '@/lib/piggyState';
 import { usePiggyPopup } from './PiggyPopup';
 
 const SHORTCUTS = [
-  { label: 'Mercado', text: 'gastei 50 mercado' },
-  { label: 'iFood', text: 'gastei 35 ifood' },
-  { label: 'Uber', text: 'gastei 15 uber' },
-  { label: 'Café', text: 'gastei 8 café' },
+  { label: 'Mercado', emoji: '🛒', text: 'gastei 50 mercado' },
+  { label: 'iFood', emoji: '🍔', text: 'gastei 35 ifood' },
+  { label: 'Uber', emoji: '🚗', text: 'gastei 15 uber' },
+  { label: 'Café', emoji: '☕', text: 'gastei 8 café' },
+  { label: 'Salário', emoji: '💰', text: 'recebi 3000 salário' },
 ];
 
-export default function TransactionInput() {
+interface Props {
+  onDone?: () => void;
+}
+
+export default function TransactionInput({ onDone }: Props = {}) {
   const [text, setText] = useState('');
   const [isListening, setIsListening] = useState(false);
   const { add } = useTransactions();
@@ -32,6 +37,7 @@ export default function TransactionInput() {
     recordTransaction();
     setText('');
     piggyPopup.show(`Transação registrada em ${t.categoria}`, t.tipo === 'receita' ? 'happy' : 'idle');
+    onDone?.();
     setTimeout(async () => {
       const reaction = await sendProactiveSystemMessage(`O usuário registrou: ${raw}`);
       if (reaction) piggyPopup.show(reaction, t.tipo === 'receita' ? 'happy' : 'sad');
@@ -52,31 +58,22 @@ export default function TransactionInput() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="quiet-card p-5"
-    >
-      <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-3">
-        Nova Transação
-      </p>
-
-      {/* Input principal estilo pílula */}
-      <div className="relative flex items-center gap-2 bg-muted/40 rounded-full border border-border/40 pl-5 pr-1 py-1 mb-3">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+      {/* Input principal */}
+      <div className="relative flex items-center gap-2 bg-muted/50 rounded-full border border-border/50 pl-5 pr-1.5 py-1.5">
         <input
           type="text"
+          autoFocus
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit(text)}
           placeholder={isListening ? '🎤 Ouvindo…' : 'ex: 50 mercado'}
-          className="flex-1 bg-transparent text-foreground placeholder-muted-foreground/60 py-2.5 text-[15px] outline-none"
+          className="flex-1 bg-transparent text-foreground placeholder-muted-foreground/60 py-2 text-base outline-none"
         />
         <button
           onClick={handleMic}
-          className={`p-2.5 rounded-full transition-all ${
-            isListening
-              ? 'bg-destructive text-destructive-foreground animate-pulse'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+          className={`p-2.5 rounded-full transition-all tap-scale ${
+            isListening ? 'bg-destructive text-destructive-foreground animate-pulse' : 'text-muted-foreground'
           }`}
           aria-label="Falar"
         >
@@ -85,24 +82,30 @@ export default function TransactionInput() {
         <button
           onClick={() => submit(text)}
           disabled={!text.trim()}
-          className="p-2.5 rounded-full gradient-primary text-primary-foreground disabled:opacity-30 transition-opacity"
+          className="p-2.5 rounded-full gradient-primary text-primary-foreground disabled:opacity-30 tap-scale"
           aria-label="Confirmar"
         >
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Atalhos */}
-      <div className="flex gap-2 overflow-x-auto no-scrollbar">
-        {SHORTCUTS.map((s) => (
-          <button
-            key={s.label}
-            onClick={() => submit(s.text)}
-            className="whitespace-nowrap px-3.5 py-1.5 rounded-full text-[11px] uppercase tracking-wider font-semibold bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/30 transition-colors"
-          >
-            {s.label}
-          </button>
-        ))}
+      {/* Atalhos como chips com emoji */}
+      <div>
+        <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2 px-1">
+          Atalhos
+        </p>
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
+          {SHORTCUTS.map((s) => (
+            <button
+              key={s.label}
+              onClick={() => submit(s.text)}
+              className="flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 rounded-full text-xs font-semibold bg-muted/50 hover:bg-muted text-foreground border border-border/40 tap-scale"
+            >
+              <span className="text-sm">{s.emoji}</span>
+              {s.label}
+            </button>
+          ))}
+        </div>
       </div>
     </motion.div>
   );
