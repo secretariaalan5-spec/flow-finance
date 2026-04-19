@@ -73,11 +73,11 @@ export default function PiggyAvatar({ mood = "idle", isSpeaking = false, classNa
         <circle cx="100" cy="100" r="78" fill="url(#bodyGrad)" />
         <path d="M 22 100 A 78 78 0 0 0 178 100 A 82 78 0 0 1 22 100 Z" fill="#7A2655" opacity="0.12" />
 
-        <g style={{ originX: "65px", originY: "80px" }}>
+        <g>
           <ellipse cx="65" cy="80" rx="10" ry="14" fill="#2D1020" style={{ transform: `scale(${eyeScale})`, transformOrigin: "65px 80px" }} />
           <circle cx="62" cy="75" r="3.5" fill="white" />
         </g>
-        <g style={{ originX: "135px", originY: "80px" }}>
+        <g>
           <ellipse cx="135" cy="80" rx="10" ry="14" fill="#2D1020" style={{ transform: `scale(${eyeScale})`, transformOrigin: "135px 80px" }} />
           <circle cx="132" cy="75" r="3.5" fill="white" />
         </g>
