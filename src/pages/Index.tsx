@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, Clock, Sparkles, Plus, Bell, Sun, Moon } from 'lucide-react';
 import { useTheme } from '@/lib/theme';
@@ -10,7 +10,16 @@ import PiggyChat from '@/components/PiggyChat';
 import PiggyAvatar, { PiggyMood } from '@/components/PiggyAvatar';
 import { useTransactions } from '@/hooks/useTransactions';
 import { usePiggyPopup } from '@/components/PiggyPopup';
-import { getInactivityMessage, recordVisit, isSummaryDay } from '@/lib/piggyState';
+import { usePiggyEffects } from '@/components/PiggyEffects';
+import {
+  getInactivityMessage,
+  recordVisit,
+  isSummaryDay,
+  getContextualMessage,
+  isNightTime,
+  isMorningFirstVisit,
+  getPiggyState,
+} from '@/lib/piggyState';
 import { sendFinancialAnalysis, sendWeeklySummary } from '@/lib/gemini';
 
 type Tab = 'dashboard' | 'history' | 'chat';
@@ -18,16 +27,26 @@ type Tab = 'dashboard' | 'history' | 'chat';
 export default function Index() {
   const [tab, setTab] = useState<Tab>('dashboard');
   const [showQuickAdd, setShowQuickAdd] = useState(false);
-  const { balance, totalIncome, totalExpense, categoryTotals, currentMonth } = useTransactions();
+  const { transactions, balance, totalIncome, totalExpense, categoryTotals, currentMonth } = useTransactions();
   const piggyPopup = usePiggyPopup();
+  const piggyEffects = usePiggyEffects();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { theme, toggle: toggleTheme } = useTheme();
+  const prevTxCountRef = useRef(transactions.length);
+  const prevBalanceRef = useRef(balance);
+  const bootedRef = useRef(false);
 
   let piggyMood: PiggyMood = 'idle';
-  if (balance < 0) piggyMood = 'sad';
+  if (isAnalyzing) piggyMood = 'thinking';
+  else if (balance < 0) piggyMood = 'sad';
+  else if (getPiggyState().streak >= 7) piggyMood = 'proud';
+  else if (isMorningFirstVisit()) piggyMood = 'excited';
+  else if (isNightTime()) piggyMood = 'sleepy';
   else if (balance > 1000 || (balance > 0 && totalExpense < 50)) piggyMood = 'happy';
 
   useEffect(() => {
+    if (bootedRef.current) return;
+    bootedRef.current = true;
     const inactivityMsg = getInactivityMessage();
     recordVisit();
     if (inactivityMsg) {
@@ -38,14 +57,50 @@ export default function Index() {
         const summary = await sendWeeklySummary({ totalIncome, totalExpense, topCategory });
         piggyPopup.show(summary, totalExpense > totalIncome ? 'sad' : 'happy');
       }, 3000);
+    } else {
+      const msg = getContextualMessage({ balance, totalExpense, totalIncome });
+      const mood: PiggyMood = balance < 0 ? 'sad' : balance > 2000 ? 'happy' : 'idle';
+      setTimeout(() => piggyPopup.show(msg, mood), 1800);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Reage a novas transações
+  useEffect(() => {
+    if (transactions.length > prevTxCountRef.current) {
+      const last = transactions[0];
+      if (last) {
+        if (last.tipo === 'receita' && last.valor >= 500) {
+          piggyEffects.trigger('confetti');
+        }
+        if (last.tipo === 'despesa') {
+          const sameCategory = currentMonth.filter(
+            (t) => t.tipo === 'despesa' && t.categoria === last.categoria && t.id !== last.id
+          );
+          if (sameCategory.length >= 3) {
+            const avg = sameCategory.reduce((s, t) => s + t.valor, 0) / sameCategory.length;
+            if (last.valor > avg * 1.8) piggyEffects.trigger('shake');
+          }
+        }
+      }
+    }
+    prevTxCountRef.current = transactions.length;
+  }, [transactions, currentMonth, piggyEffects]);
+
+  // Reage ao saldo cruzando limites importantes
+  useEffect(() => {
+    if (prevBalanceRef.current >= 0 && balance < 0) {
+      piggyEffects.trigger('tears');
+    } else if (prevBalanceRef.current < 1000 && balance >= 1000) {
+      piggyEffects.trigger('hearts');
+    }
+    prevBalanceRef.current = balance;
+  }, [balance, piggyEffects]);
+
   const handleAnalysis = async () => {
     if (isAnalyzing) return;
     setIsAnalyzing(true);
-    piggyPopup.show('Deixa eu olhar suas contas...', 'surprised');
+    piggyPopup.show('Deixa eu olhar suas contas...', 'thinking');
     const analysis = await sendFinancialAnalysis({
       totalIncome,
       totalExpense,
