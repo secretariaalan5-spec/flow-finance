@@ -69,16 +69,16 @@ async function triggerPush(title: string, body: string) {
 // === TIPOS DE NOTIFICAÇÃO (COM LIMITADOR DE FREQUÊNCIA) ===
 
 /**
- * Alerta de orçamento estourado. Máximo 1 por categoria por dia (24h).
+ * Alerta de orçamento estourado. Máximo 1 por categoria a cada 5 minutos (teste).
  */
 export function notifyBudgetExceeded(category: string) {
   const log = getLog();
   const now = Date.now();
   const lastAlert = log.budgetAlerts[category] || 0;
-  const hoursSince = (now - lastAlert) / (1000 * 60 * 60);
+  const minutesSince = (now - lastAlert) / (1000 * 60);
 
-  // Só notifica se passou mais de 24 horas desde o último alerta dessa categoria
-  if (hoursSince > 24) {
+  // Só notifica se passou mais de 5 minutos desde o último alerta dessa categoria
+  if (minutesSince > 5) {
     triggerPush(
       "Alerta Vermelho! 🚨", 
       `Você estourou o limite de ${category}. Parabéns pela falta de controle. 🤡`
@@ -89,14 +89,14 @@ export function notifyBudgetExceeded(category: string) {
 }
 
 /**
- * Lembrete diário/inatividade. Máximo 1 a cada 48h para não ser chato.
+ * Lembrete diário/inatividade.
  */
 export function notifyInactivity(message: string) {
   const log = getLog();
   const now = Date.now();
   const hoursSince = (now - log.lastDailyReminder) / (1000 * 60 * 60);
 
-  if (hoursSince > 48) {
+  if (hoursSince > 12) {
     triggerPush("Oinc! 🐷", message);
     log.lastDailyReminder = now;
     saveLog(log);

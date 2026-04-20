@@ -72,11 +72,6 @@ export default function Index() {
       const mood: PiggyMood = balance < 0 ? 'sad' : balance > 2000 ? 'happy' : 'idle';
       setTimeout(() => piggyPopup.show(msg, mood), 1800);
     }
-    // Solicita permissão de notificação (o limiter já garante não spammar)
-    import('@/lib/notifications').then(({ requestNotificationPermission }) => {
-      requestNotificationPermission();
-    });
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -124,6 +119,12 @@ export default function Index() {
 
   const handleAnalysis = async () => {
     if (isAnalyzing) return;
+    
+    // Pede permissão de push nativo em um gesto do usuário
+    import('@/lib/notifications').then(({ requestNotificationPermission }) => {
+      requestNotificationPermission();
+    });
+
     setIsAnalyzing(true);
     piggyPopup.show('Deixa eu olhar suas contas...', 'thinking');
     const analysis = await sendFinancialAnalysis({
@@ -335,7 +336,11 @@ export default function Index() {
 
           {/* FAB CENTRAL */}
           <button
-            onClick={() => { haptic('medium'); setShowQuickAdd(true); }}
+            onClick={() => { 
+              haptic('medium'); 
+              setShowQuickAdd(true); 
+              import('@/lib/notifications').then(({ requestNotificationPermission }) => requestNotificationPermission());
+            }}
             className="-mt-7 w-14 h-14 rounded-full gradient-primary text-primary-foreground flex items-center justify-center shadow-2xl shadow-primary/40 tap-scale border-4 border-background"
             aria-label="Adicionar transação"
           >

@@ -102,15 +102,15 @@ function getOfflineResponse(message: string): string {
   const lower = message.toLowerCase();
   
   if (lower.includes("gast") || lower.includes("comprei") || lower.includes("paguei")) {
-    return "Tô sem internet, mas não surdo. Anotei sua despesa. Depois a gente discute sua falta de controle financeiro. 🙄💸";
+    return "Meu cérebro falhou, mas anotei sua despesa. Depois a gente discute sua falta de controle financeiro. 🙄💸";
   }
   if (lower.includes("recebi") || lower.includes("ganhei") || lower.includes("salário")) {
-    return "Milagre! Entrou dinheiro. Sem internet aqui, mas já tô feliz. Só não vai gastar tudo no mesmo dia. 🐷💅";
+    return "Milagre! Entrou dinheiro. Minha mente travou aqui, mas já tô feliz. Só não vai gastar tudo no mesmo dia. 🐷💅";
   }
   if (lower.includes("oi") || lower.includes("olá") || lower.includes("ola")) {
-    return "Oi. Tô offline. Mas pode ir confessando seus pecados financeiros que eu leio quando voltar. 🐷";
+    return "Oi. Tô meio grogue agora (API falhou). Mas pode ir confessando seus pecados financeiros que eu leio quando voltar. 🐷";
   }
-  return "Tô sem internet, me deixa em paz. Quando o Wi-Fi voltar eu julgo suas finanças. 🤡";
+  return "Meu cérebro travou, me deixa em paz. Quando eu voltar ao normal eu julgo suas finanças. 🤡";
 }
 
 // === API PÚBLICA ===
