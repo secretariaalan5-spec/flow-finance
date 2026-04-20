@@ -94,10 +94,12 @@ export default function TransactionList({ limit, showFilters = false }: Props) {
       )}
 
       {display.length === 0 ? (
-        <div className="quiet-card p-10 text-center space-y-2">
-          <p className="text-3xl">🐷</p>
-          <p className="text-sm font-semibold text-foreground">Nenhuma transação</p>
-          <p className="text-xs text-muted-foreground">Adicione algo usando o botão + abaixo</p>
+        <div className="quiet-card p-10 text-center space-y-2 border-2 border-dashed border-muted">
+          <p className="text-4xl mb-3">💸</p>
+          <p className="text-sm font-bold text-foreground">Ainda não tem nada aqui!</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Toque no botão colorido <b className="text-primary font-black px-1">+</b> lá embaixo para anotar o que você comprou ou recebeu.
+          </p>
         </div>
       ) : (
         <div className="space-y-2">

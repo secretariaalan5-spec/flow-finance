@@ -72,7 +72,7 @@ export default function BalanceCards() {
           <div>
             <div className="flex items-center gap-1.5 mb-1">
               <Wallet className="w-3.5 h-3.5 opacity-60" />
-              <p className="text-[10px] uppercase tracking-[0.22em] font-bold opacity-70">Saldo Atual</p>
+              <p className="text-[10px] uppercase tracking-[0.22em] font-bold opacity-70">O Que Sobrou</p>
             </div>
             <p className="text-[10px] capitalize opacity-50">{monthName}</p>
           </div>
@@ -83,8 +83,8 @@ export default function BalanceCards() {
             style={{ background: 'hsl(0 0% 100% / 0.12)', borderColor: 'hsl(0 0% 100% / 0.18)' }}
           >
             {isHealthy
-              ? <><TrendingUp className="w-3 h-3" /> {savingsRate}% poupado</>
-              : <><TrendingDown className="w-3 h-3" /> Atenção!</>
+              ? <><TrendingUp className="w-3 h-3" /> {savingsRate}% na conta</>
+              : <><TrendingDown className="w-3 h-3" /> Faltando!</>
             }
           </span>
         </div>
@@ -116,9 +116,9 @@ export default function BalanceCards() {
               />
             </div>
             <div className="flex justify-between mt-1.5">
-              <span className="text-[9px] opacity-40">Início</span>
-              <span className="text-[9px] opacity-60 font-semibold">{Math.round(expenseProgress)}% gasto</span>
-              <span className="text-[9px] opacity-40">Meta</span>
+              <span className="text-[9px] opacity-40">Começo do mês</span>
+              <span className="text-[9px] opacity-60 font-semibold">Já gastou {Math.round(expenseProgress)}% do salário</span>
+              <span className="text-[9px] opacity-40">Fim</span>
             </div>
           </div>
         )}
@@ -144,14 +144,14 @@ export default function BalanceCards() {
               <TrendingUp className="w-4 h-4 text-white" strokeWidth={2.5} />
             </div>
             <span className="text-[9px] uppercase tracking-[0.12em] font-bold opacity-60" style={{ color: 'hsl(145 55% 22%)' }}>
-              Receitas
+              Dinheiro que entrou
             </span>
           </div>
           <p className="number-display font-semibold text-[1.4rem] leading-none" style={{ color: 'hsl(145 60% 16%)' }}>
             R$ {formatShort(totalIncome)}
           </p>
           <p className="text-[10px] mt-1.5 font-medium" style={{ color: 'hsl(145 50% 30%)' }}>
-            {incomeCount > 0 ? `${incomeCount} entrada${incomeCount !== 1 ? 's' : ''}` : 'Nenhuma ainda'}
+            {incomeCount > 0 ? `${incomeCount} entrada${incomeCount !== 1 ? 's' : ''}` : 'Nada entrou'}
           </p>
         </motion.div>
 
@@ -172,7 +172,7 @@ export default function BalanceCards() {
               <TrendingDown className="w-4 h-4 text-white" strokeWidth={2.5} />
             </div>
             <span className="text-[9px] uppercase tracking-[0.12em] font-bold opacity-60" style={{ color: 'hsl(8 70% 28%)' }}>
-              Gastos
+              Dinheiro que saiu
             </span>
           </div>
           <p className="number-display font-semibold text-[1.4rem] leading-none" style={{ color: 'hsl(8 70% 20%)' }}>

@@ -9,11 +9,11 @@ import { recordTransaction } from '@/lib/piggyState';
 import { usePiggyPopup } from './PiggyPopup';
 
 const SHORTCUTS = [
-  { label: 'Mercado', emoji: '🛒', text: 'gastei 50 mercado' },
-  { label: 'iFood', emoji: '🍔', text: 'gastei 35 ifood' },
-  { label: 'Uber', emoji: '🚗', text: 'gastei 15 uber' },
-  { label: 'Café', emoji: '☕', text: 'gastei 8 café' },
-  { label: 'Salário', emoji: '💰', text: 'recebi 3000 salário' },
+  { label: 'Mercado (R$ 50)', emoji: '🛒', text: 'gastei 50 mercado' },
+  { label: 'iFood (R$ 35)', emoji: '🍔', text: 'gastei 35 ifood' },
+  { label: 'Uber (R$ 15)', emoji: '🚗', text: 'gastei 15 uber' },
+  { label: 'Café (R$ 8)', emoji: '☕', text: 'gastei 8 café' },
+  { label: 'Salário (R$ 3.000)', emoji: '💰', text: 'recebi 3000 salário' },
 ];
 
 interface Props {
@@ -103,7 +103,7 @@ export default function TransactionInput({ onDone }: Props = {}) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit(text)}
-          placeholder={isProcessing ? '🧠 Analisando com IA...' : isListening ? '🎤 Ouvindo…' : 'ex: 50 mercado'}
+          placeholder={isProcessing ? '🧠 O porquinho está pensando...' : isListening ? '🎤 Ouvindo você…' : 'Ex: Comprei pão por 15'}
           disabled={isProcessing}
           className="flex-1 bg-transparent text-foreground placeholder-muted-foreground/60 py-2 text-base outline-none disabled:opacity-50"
         />
@@ -113,7 +113,7 @@ export default function TransactionInput({ onDone }: Props = {}) {
           className={`p-2.5 rounded-full transition-all tap-scale ${
             isListening ? 'bg-destructive text-destructive-foreground animate-pulse' : 'text-muted-foreground'
           } disabled:opacity-30`}
-          aria-label="Falar"
+          aria-label="Falar texto"
         >
           {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
         </button>
@@ -137,8 +137,8 @@ export default function TransactionInput({ onDone }: Props = {}) {
 
       {/* Atalhos como chips com emoji */}
       <div>
-        <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground font-semibold mb-2 px-1">
-          Atalhos
+        <p className="text-[10px] text-muted-foreground font-semibold mb-2 px-1">
+          Ou toque em um botão rápido:
         </p>
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1">
           {SHORTCUTS.map((s) => (

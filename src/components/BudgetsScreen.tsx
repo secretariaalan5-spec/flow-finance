@@ -141,11 +141,11 @@ export default function BudgetsScreen() {
           ))}
         </div>
       ) : budgetStatuses.length === 0 ? (
-        <div className="quiet-card p-10 text-center space-y-2">
-          <p className="text-4xl">🎯</p>
-          <p className="text-sm font-semibold text-foreground">Nenhum limite definido</p>
+        <div className="quiet-card p-10 text-center space-y-2 border-2 border-dashed border-muted">
+          <p className="text-4xl mb-3">🎯</p>
+          <p className="text-sm font-bold text-foreground">Nenhum limite criado</p>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Defina limites por categoria e o porquinho vai te avisar quando estiver gastando demais!
+            Escolha uma categoria acima e diga o máximo que você quer gastar. Se você exagerar, o porquinho te manda uma notificação no celular!
           </p>
         </div>
       ) : (
