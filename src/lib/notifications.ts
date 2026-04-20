@@ -47,19 +47,27 @@ async function triggerPush(title: string, body: string) {
   const hasPerm = await requestNotificationPermission();
   if (!hasPerm) return;
 
+  const options: NotificationOptions = {
+    body,
+    icon: '/favicon.ico',
+    badge: '/favicon.ico',
+    vibrate: [200, 100, 200, 100, 200], // Vibração tipo WhatsApp
+    requireInteraction: true, // Garante que a notificação fique visível até o usuário fechar
+    silent: false, // Toca som padrão do celular
+    tag: 'piggy-alert', // Agrupa notificações
+    data: {
+      url: window.location.origin
+    }
+  };
+
   try {
-    // Tenta usar o Service Worker para mostrar a notificação (funciona melhor em PWA mobile)
+    // Tenta usar o Service Worker para mostrar a notificação (obrigatório no iOS e Android nativo)
     const registration = await navigator.serviceWorker.getRegistration();
     if (registration && 'showNotification' in registration) {
-      await registration.showNotification(title, {
-        body,
-        icon: '/favicon.ico',
-        badge: '/favicon.ico',
-        vibrate: [200, 100, 200],
-      });
+      await registration.showNotification(title, options);
     } else {
       // Fallback para API padrão de desktop
-      new Notification(title, { body, icon: '/favicon.ico' });
+      new Notification(title, options);
     }
   } catch (error) {
     console.error('Falha ao enviar notificação:', error);
