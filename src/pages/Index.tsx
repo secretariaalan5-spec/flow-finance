@@ -12,6 +12,7 @@ import PiggyAvatar, { PiggyMood } from '@/components/PiggyAvatar';
 import BudgetBars from '@/components/BudgetBars';
 import BudgetsScreen from '@/components/BudgetsScreen';
 import PullToRefresh from '@/components/PullToRefresh';
+import MonthSelector from '@/components/MonthSelector';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useBudgets } from '@/hooks/useBudgets';
 import { usePiggyPopup } from '@/components/PiggyPopup';
@@ -214,6 +215,7 @@ export default function Index() {
                 }}
               >
                 <div className="px-5 pb-32 space-y-5">
+                  <MonthSelector />
                   <BalanceCards />
                   <BudgetBars onManage={() => { haptic('light'); setTab('budgets'); }} />
                   <CategoryChart />
@@ -245,9 +247,11 @@ export default function Index() {
               transition={{ duration: 0.25 }}
               className="absolute inset-0 app-scroll px-5 pb-32 pt-4"
             >
-              <h2 className="font-display text-3xl font-bold text-foreground mb-1 leading-none">Histórico</h2>
-              <p className="text-sm text-muted-foreground mb-2">Todas as suas transações.</p>
-              <p className="text-[11px] text-muted-foreground/70 mb-4">💡 Arraste pra esquerda pra excluir</p>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="font-display text-3xl font-bold text-foreground leading-none">Histórico</h2>
+              </div>
+              <MonthSelector />
+              <p className="text-[11px] text-muted-foreground/70 mb-4 mt-2">💡 Arraste pra esquerda pra excluir</p>
               <TransactionList showFilters />
             </motion.div>
           )}

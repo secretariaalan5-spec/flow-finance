@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth';
 import { enqueue, getQueue, dequeue, PendingTransaction } from '@/lib/offlineQueue';
+import { useSelectedMonth } from '@/lib/dateStore';
 
 // Unique ID per hook instance (avoids Supabase channel name collision in StrictMode)
 let channelCounter = 0;
@@ -225,10 +226,10 @@ export function useTransactions() {
   }, []);
 
   // ─── Cálculos do mês atual ───────────────────────────────────────────────────
-  const now = new Date();
+  const selectedMonth = useSelectedMonth();
   const currentMonth = transactions.filter(t => {
     const d = new Date(t.data);
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    return d.getMonth() === selectedMonth.getMonth() && d.getFullYear() === selectedMonth.getFullYear();
   });
 
   const totalIncome  = currentMonth.filter(t => t.tipo === 'receita').reduce((s, t) => s + t.valor, 0);

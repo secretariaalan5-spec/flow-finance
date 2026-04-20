@@ -37,7 +37,7 @@ interface Props {
 }
 
 export default function TransactionList({ limit, showFilters = false }: Props) {
-  const { transactions, remove, loading } = useTransactions();
+  const { currentMonth: transactions, remove, loading } = useTransactions();
   const [filterType, setFilterType] = useState<'todos' | 'receita' | 'despesa'>('todos');
   const [filterCat, setFilterCat] = useState('todos');
 
