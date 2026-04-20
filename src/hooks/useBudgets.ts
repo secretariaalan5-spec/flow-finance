@@ -38,6 +38,21 @@ export function useBudgets() {
 
   useEffect(() => { fetchBudgets(); }, [fetchBudgets]);
 
+  // ─── Realtime subscription ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    const channelName = `budgets-${user.id}-${Math.random().toString(36).slice(2, 9)}`;
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'budget_limits', filter: `user_id=eq.${user.id}` },
+        () => fetchBudgets()
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchBudgets]);
+
   // Upsert: cria ou atualiza o limite de uma categoria
   const upsert = useCallback(async (categoria: string, limite: number) => {
     if (!user) return;
