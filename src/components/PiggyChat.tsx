@@ -128,7 +128,7 @@ export default function PiggyChat() {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-border/30">
+      <div className="p-4 pb-32 border-t border-border/30 bg-background/80 backdrop-blur-md">
         <div className="flex items-center gap-2 bg-muted/40 rounded-full border border-border/40 pl-5 pr-1 py-1">
           <input
             type="text"

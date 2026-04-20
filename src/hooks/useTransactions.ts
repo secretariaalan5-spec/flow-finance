@@ -31,16 +31,42 @@ function generateLocalId() {
   return `local_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
+// Global state
+let globalTransactions: Transaction[] = [];
+let globalLoading = true;
+const listeners = new Set<() => void>();
+
+function notify() {
+  listeners.forEach(l => l());
+}
+
 export function useTransactions() {
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  
+  // Força re-render quando a store atualizar
+  const [, setTick] = useState(0);
+
+  const transactions = globalTransactions;
+  const loading = globalLoading;
+
+  useEffect(() => {
+    const listener = () => setTick(t => t + 1);
+    listeners.add(listener);
+    return () => { listeners.delete(listener); };
+  }, []);
+
   const channelIdRef = useRef(`tx-${++channelCounter}`);
 
   // ─── Fetch do Supabase ───────────────────────────────────────────────────────
   const fetchTransactions = useCallback(async () => {
-    if (!user) { setTransactions([]); setLoading(false); return; }
-    setLoading(true);
+    if (!user) { globalTransactions = []; globalLoading = false; notify(); return; }
+    
+    // Mostramos loading apenas na primeira carga
+    if (globalTransactions.length === 0) {
+      globalLoading = true;
+      notify();
+    }
+
     const { data, error } = await supabase
       .from('transactions')
       .select('*')
@@ -68,9 +94,10 @@ export function useTransactions() {
       const remoteIds = new Set((data as Transaction[]).map(t => t.id));
       const stillPending = pendingTx.filter(p => !remoteIds.has(p.id));
 
-      setTransactions([...stillPending, ...(data as Transaction[])]);
+      globalTransactions = [...stillPending, ...(data as Transaction[])];
     }
-    setLoading(false);
+    globalLoading = false;
+    notify();
   }, [user]);
 
   useEffect(() => {
@@ -148,7 +175,8 @@ export function useTransactions() {
       created_at: now,
       _pending: !navigator.onLine,
     };
-    setTransactions(prev => [optimistic, ...prev]);
+    globalTransactions = [optimistic, ...globalTransactions];
+    notify();
 
     if (!navigator.onLine) {
       // Guarda na fila offline
@@ -176,7 +204,8 @@ export function useTransactions() {
 
     if (!error && data) {
       // Substitui o otimístico pelo confirmado
-      setTransactions(prev => prev.map(tx => tx.id === localId ? (data as Transaction) : tx));
+      globalTransactions = globalTransactions.map(tx => tx.id === localId ? (data as Transaction) : tx);
+      notify();
     } else {
       // Falhou mesmo online — move para fila
       const pending: PendingTransaction = {
@@ -194,10 +223,10 @@ export function useTransactions() {
     }
   }, [user]);
 
-  // ─── Remover transação ───────────────────────────────────────────────────────
   const remove = useCallback(async (id: string) => {
     // Remove visualmente imediatamente
-    setTransactions(prev => prev.filter(t => t.id !== id));
+    globalTransactions = globalTransactions.filter(t => t.id !== id);
+    notify();
 
     // Se era uma transação local pendente, remove da fila
     if (id.startsWith('local_')) {
