@@ -119,6 +119,41 @@ export const sendMessageToPiggy = async (message: string): Promise<string> => {
   return sendWithRetry(message);
 };
 
+export const parseTransactionWithAI = async (text: string, existingCategories: string[]): Promise<{ valor: number, tipo: 'receita' | 'despesa', categoria: string, emoji: string } | null> => {
+  if (!genAI) return null;
+
+  const prompt = `Extraia as informações da seguinte transação financeira: "${text}"
+
+Regras:
+1. "tipo" deve ser "receita" (ganho) ou "despesa" (gasto).
+2. "valor" deve ser um número positivo (ex: 50.50).
+3. "categoria" deve ser a melhor correspondência entre as categorias existentes: [${existingCategories.join(', ')}]. SE nenhuma se encaixar bem, crie uma NOVA categoria curta e descritiva.
+4. "emoji" deve ser um emoji único que represente a categoria.
+
+Retorne APENAS um JSON válido no formato:
+{"valor": 10.5, "tipo": "despesa", "categoria": "Lanche", "emoji": "🍔"}
+Não inclua crases, formatação markdown ou qualquer outro texto.`;
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+    const result = await model.generateContent(prompt);
+    const jsonText = result.response.text().trim().replace(/```json/g, '').replace(/```/g, '');
+    const data = JSON.parse(jsonText);
+    
+    if (typeof data.valor === 'number' && (data.tipo === 'receita' || data.tipo === 'despesa') && data.categoria) {
+      return {
+        valor: data.valor,
+        tipo: data.tipo,
+        categoria: data.categoria,
+        emoji: data.emoji || '📦'
+      };
+    }
+  } catch (error) {
+    console.error("Erro no parser de IA:", error);
+  }
+  return null;
+};
+
 export const sendProactiveSystemMessage = async (actionDesc: string): Promise<string> => {
   const prompt = `[SISTEMA]: O usuário acabou de adicionar a seguinte transação: "${actionDesc}". Reaja a isso espontaneamente como o Cofrinho, em apenas 1 frase curta. Não use aspas.`;
   try {

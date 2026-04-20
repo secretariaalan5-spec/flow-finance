@@ -27,17 +27,43 @@ export const INCOME_CATEGORIES: CategoryDef[] = [
   { label: 'Outros', emoji: '📦', keywords: [] },
 ];
 
+const CUSTOM_CATEGORIES_KEY = "piggy_custom_categories";
+
+export function getCustomCategories(): CategoryDef[] {
+  try {
+    const data = localStorage.getItem(CUSTOM_CATEGORIES_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveCustomCategory(label: string, emoji: string) {
+  const custom = getCustomCategories();
+  // Evita duplicata local
+  if (!custom.some(c => c.label.toLowerCase() === label.toLowerCase())) {
+    custom.push({ label, emoji, keywords: [] });
+    localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(custom));
+  }
+}
+
+export function getAllCategories(tipo: 'receita' | 'despesa'): CategoryDef[] {
+  const base = tipo === 'receita' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const custom = getCustomCategories();
+  return [...base, ...custom];
+}
+
 export function detectCategory(text: string, tipo: 'receita' | 'despesa'): string {
   const lower = text.toLowerCase();
-  const categories = tipo === 'receita' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const categories = getAllCategories(tipo);
 
   for (const cat of categories) {
-    if (cat.keywords.some(k => lower.includes(k))) return cat.label;
+    if (cat.keywords && cat.keywords.some(k => lower.includes(k))) return cat.label;
   }
   return 'Outros';
 }
 
 export function getCategoryEmoji(categoria: string): string {
-  const all = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];
-  return all.find(c => c.label === categoria)?.emoji || '📦';
+  const all = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES, ...getCustomCategories()];
+  return all.find(c => c.label.toLowerCase() === categoria.toLowerCase())?.emoji || '📦';
 }
