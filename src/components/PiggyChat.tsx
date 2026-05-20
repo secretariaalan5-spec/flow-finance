@@ -59,10 +59,19 @@ export default function PiggyChat() {
     if (transaction) {
       add(transaction);
       recordTransaction();
-      addMessage("system", `✓ ${transaction.tipo === "receita" ? "Receita" : "Despesa"} registrada em ${transaction.categoria}: R$ ${transaction.valor.toFixed(2)}`);
+      
+      const methodMap = {
+        credito: " (Crédito)",
+        debito: " (Débito)",
+        pix: " (Pix)",
+        dinheiro: " (Dinheiro)"
+      };
+      const methodLabel = transaction.metodo_pagamento ? methodMap[transaction.metodo_pagamento] : "";
+      
+      addMessage("system", `✓ ${transaction.tipo === "receita" ? "Receita" : "Despesa"} registrada em ${transaction.categoria}${methodLabel}: R$ ${transaction.valor.toFixed(2)}`);
       setIsTyping(true);
       const piggyResponse = await sendMessageToPiggy(
-        `[SISTEMA]: Usuário registrou ${transaction.tipo} de R$${transaction.valor.toFixed(2)} em ${transaction.categoria}. Reaja brevemente.`
+        `[SISTEMA]: Usuário registrou ${transaction.tipo} de R$${transaction.valor.toFixed(2)} em ${transaction.categoria}${methodLabel}. Reaja brevemente.`
       );
       setIsTyping(false);
       addMessage("piggy", piggyResponse);

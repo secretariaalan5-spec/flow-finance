@@ -152,6 +152,35 @@ export default function TransactionList({ limit, showFilters = false }: Props) {
                           >
                             {t.categoria}
                           </span>
+                          {t.metodo_pagamento && (
+                            <span
+                              className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                              style={{
+                                background: t.metodo_pagamento === 'credito' 
+                                  ? 'hsl(230 40% 92%)' 
+                                  : t.metodo_pagamento === 'pix'
+                                  ? 'hsl(180 40% 92%)'
+                                  : t.metodo_pagamento === 'dinheiro'
+                                  ? 'hsl(45 50% 92%)'
+                                  : 'hsl(200 40% 92%)',
+                                color: t.metodo_pagamento === 'credito'
+                                  ? 'hsl(230 50% 30%)'
+                                  : t.metodo_pagamento === 'pix'
+                                  ? 'hsl(180 50% 30%)'
+                                  : t.metodo_pagamento === 'dinheiro'
+                                  ? 'hsl(45 60% 30%)'
+                                  : 'hsl(200 50% 30%)',
+                              }}
+                            >
+                              {t.metodo_pagamento === 'credito'
+                                ? '💳 Crédito'
+                                : t.metodo_pagamento === 'debito'
+                                ? '💳 Débito'
+                                : t.metodo_pagamento === 'pix'
+                                ? '📱 Pix'
+                                : '💵 Dinheiro'}
+                            </span>
+                          )}
                           <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
                             <Clock className="w-2.5 h-2.5" />
                             {formatDateLabel(t.data)} · {formatTime(t.data)}

@@ -14,12 +14,30 @@ function detectType(text: string): 'receita' | 'despesa' {
   return 'despesa';
 }
 
+export function detectPaymentMethod(text: string): 'credito' | 'debito' | 'pix' | 'dinheiro' | undefined {
+  const lower = text.toLowerCase();
+  if (lower.includes('credito') || lower.includes('crédito') || lower.includes('cartao') || lower.includes('cartão')) {
+    return 'credito';
+  }
+  if (lower.includes('debito') || lower.includes('débito')) {
+    return 'debito';
+  }
+  if (lower.includes('pix')) {
+    return 'pix';
+  }
+  if (lower.includes('dinheiro') || lower.includes('espécie') || lower.includes('especie') || lower.includes('cash')) {
+    return 'dinheiro';
+  }
+  return undefined;
+}
+
 export function parseTransaction(text: string): NewTransaction | null {
   const valor = extractValue(text);
   if (!valor || valor <= 0) return null;
 
   const tipo = detectType(text);
   const categoria = detectCategory(text, tipo);
+  const metodo_pagamento = detectPaymentMethod(text);
 
   return {
     tipo,
@@ -27,5 +45,6 @@ export function parseTransaction(text: string): NewTransaction | null {
     categoria,
     descricao: text.trim(),
     data: new Date().toISOString(),
+    metodo_pagamento,
   };
 }

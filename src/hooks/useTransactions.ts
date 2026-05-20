@@ -16,6 +16,7 @@ export interface Transaction {
   descricao: string;
   data: string;
   created_at: string;
+  metodo_pagamento?: 'credito' | 'debito' | 'pix' | 'dinheiro';
   _pending?: boolean; // transação local ainda não sincronizada
 }
 
@@ -25,6 +26,7 @@ export interface NewTransaction {
   categoria: string;
   descricao?: string;
   data?: string;
+  metodo_pagamento?: 'credito' | 'debito' | 'pix' | 'dinheiro';
 }
 
 function generateLocalId() {
@@ -88,6 +90,7 @@ export function useTransactions() {
           data: p.data,
           created_at: p.created_at,
           _pending: true,
+          metodo_pagamento: p.metodo_pagamento,
         }));
 
       // Remove duplicatas (localId pode ter sido confirmado)
@@ -135,6 +138,7 @@ export function useTransactions() {
             descricao: item.descricao,
             data: item.data,
             user_id: item.user_id,
+            metodo_pagamento: item.metodo_pagamento,
           });
           if (!error) await dequeue(item.localId);
         } else if (item.action === 'delete' && item.remoteId) {
@@ -173,6 +177,7 @@ export function useTransactions() {
       descricao: t.descricao ?? '',
       data: t.data ?? now,
       created_at: now,
+      metodo_pagamento: t.metodo_pagamento || (t.tipo === 'receita' ? 'pix' : 'debito'),
       _pending: !navigator.onLine,
     };
     globalTransactions = [optimistic, ...globalTransactions];
@@ -190,6 +195,7 @@ export function useTransactions() {
         data: t.data ?? now,
         created_at: now,
         action: 'insert',
+        metodo_pagamento: t.metodo_pagamento || (t.tipo === 'receita' ? 'pix' : 'debito'),
       };
       await enqueue(pending);
       return;
@@ -218,6 +224,7 @@ export function useTransactions() {
         data: t.data ?? now,
         created_at: now,
         action: 'insert',
+        metodo_pagamento: t.metodo_pagamento || (t.tipo === 'receita' ? 'pix' : 'debito'),
       };
       await enqueue(pending);
     }
@@ -263,7 +270,17 @@ export function useTransactions() {
 
   const totalIncome  = currentMonth.filter(t => t.tipo === 'receita').reduce((s, t) => s + t.valor, 0);
   const totalExpense = currentMonth.filter(t => t.tipo === 'despesa').reduce((s, t) => s + t.valor, 0);
-  const balance = totalIncome - totalExpense;
+  
+  // Crédito vs Débito
+  const totalCreditExpense = currentMonth
+    .filter(t => t.tipo === 'despesa' && t.metodo_pagamento === 'credito')
+    .reduce((s, t) => s + t.valor, 0);
+  const totalDebitExpense = currentMonth
+    .filter(t => t.tipo === 'despesa' && t.metodo_pagamento !== 'credito')
+    .reduce((s, t) => s + t.valor, 0);
+    
+  // Saldo na conta (O Que Sobrou) desconsidera crédito
+  const balance = totalIncome - totalDebitExpense;
 
   const categoryTotals = currentMonth
     .filter(t => t.tipo === 'despesa')
@@ -272,5 +289,18 @@ export function useTransactions() {
       return acc;
     }, {});
 
-  return { transactions, currentMonth, loading, add, remove, totalIncome, totalExpense, balance, categoryTotals, refetch: fetchTransactions };
+  return { 
+    transactions, 
+    currentMonth, 
+    loading, 
+    add, 
+    remove, 
+    totalIncome, 
+    totalExpense, 
+    totalCreditExpense,
+    totalDebitExpense,
+    balance, 
+    categoryTotals, 
+    refetch: fetchTransactions 
+  };
 }

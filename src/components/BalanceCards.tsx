@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useTransactions } from '@/hooks/useTransactions';
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, CreditCard } from 'lucide-react';
 
 function formatCurrency(v: number) {
   const formatted = Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -14,12 +14,12 @@ function formatShort(v: number) {
 }
 
 export default function BalanceCards() {
-  const { balance, totalIncome, totalExpense, currentMonth, loading } = useTransactions();
+  const { balance, totalIncome, totalExpense, totalCreditExpense, totalDebitExpense, currentMonth, loading } = useTransactions();
   const monthName = new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
   const isHealthy = balance >= 0;
 
-  const savingsRate = totalIncome > 0 ? Math.round(((totalIncome - totalExpense) / totalIncome) * 100) : 0;
-  const expenseProgress = totalIncome > 0 ? Math.min((totalExpense / totalIncome) * 100, 100) : 0;
+  const savingsRate = totalIncome > 0 ? Math.round((balance / totalIncome) * 100) : 0;
+  const expenseProgress = totalIncome > 0 ? Math.min((totalDebitExpense / totalIncome) * 100, 100) : 0;
 
   const incomeCount  = currentMonth.filter(t => t.tipo === 'receita').length;
   const expenseCount = currentMonth.filter(t => t.tipo === 'despesa').length;
@@ -181,6 +181,38 @@ export default function BalanceCards() {
           <p className="text-[10px] mt-1.5 font-medium" style={{ color: 'hsl(8 60% 35%)' }}>
             {expenseCount > 0 ? `${expenseCount} saída${expenseCount !== 1 ? 's' : ''}` : 'Nenhuma ainda'}
           </p>
+        </motion.div>
+
+        {/* Cartão de Crédito */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.24, duration: 0.3 }}
+          className="col-span-2 relative overflow-hidden rounded-[1.5rem] p-4 flex items-center justify-between"
+          style={{
+            background: 'linear-gradient(155deg, hsl(230 40% 94%) 0%, hsl(230 45% 88%) 100%)',
+            border: '1px solid hsl(230 35% 78% / 0.6)',
+            boxShadow: '0 8px 24px -12px hsl(230 40% 35% / 0.3)',
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'hsl(230 60% 50%)' }}>
+              <CreditCard className="w-4 h-4 text-white" strokeWidth={2.2} />
+            </div>
+            <div>
+              <span className="text-[9px] uppercase tracking-[0.12em] font-bold opacity-60" style={{ color: 'hsl(230 50% 25%)' }}>
+                Fatura do Cartão (Crédito)
+              </span>
+              <p className="text-[10px] mt-0.5 opacity-75" style={{ color: 'hsl(230 45% 35%)' }}>
+                Total acumulado no cartão
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="number-display font-semibold text-[1.4rem] leading-none" style={{ color: 'hsl(230 60% 20%)' }}>
+              R$ {formatShort(totalCreditExpense)}
+            </p>
+          </div>
         </motion.div>
 
       </div>

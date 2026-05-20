@@ -32,6 +32,7 @@ export type Database = {
           descricao: string;
           data: string;
           created_at: string;
+          metodo_pagamento: 'credito' | 'debito' | 'pix' | 'dinheiro';
         };
         Insert: {
           user_id: string;
@@ -40,6 +41,7 @@ export type Database = {
           categoria: string;
           descricao?: string;
           data?: string;
+          metodo_pagamento?: 'credito' | 'debito' | 'pix' | 'dinheiro';
         };
         Update: {
           tipo?: 'receita' | 'despesa';
@@ -47,6 +49,7 @@ export type Database = {
           categoria?: string;
           descricao?: string;
           data?: string;
+          metodo_pagamento?: 'credito' | 'debito' | 'pix' | 'dinheiro';
         };
       };
     };

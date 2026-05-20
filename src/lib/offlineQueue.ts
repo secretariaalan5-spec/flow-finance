@@ -32,6 +32,7 @@ export interface PendingTransaction {
   created_at: string;
   action: 'insert' | 'delete';
   remoteId?: string;     // preenchido quando for delete
+  metodo_pagamento?: 'credito' | 'debito' | 'pix' | 'dinheiro';
 }
 
 export async function enqueue(item: PendingTransaction): Promise<void> {

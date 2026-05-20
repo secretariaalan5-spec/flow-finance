@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { parseTransaction } from '@/lib/parser';
+import { parseTransaction, detectPaymentMethod } from '@/lib/parser';
 import { useTransactions } from '@/hooks/useTransactions';
 import { Mic, MicOff, ArrowRight } from 'lucide-react';
 import { sendProactiveSystemMessage } from '@/lib/gemini';
@@ -22,14 +22,25 @@ interface Props {
 
 export default function TransactionInput({ onDone }: Props = {}) {
   const [text, setText] = useState('');
+  const [metodo, setMetodo] = useState<'credito' | 'debito' | 'pix' | 'dinheiro'>('debito');
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { add } = useTransactions();
   const piggyPopup = usePiggyPopup();
 
-  const submit = async (raw: string) => {
+  const handleInputChange = (val: string) => {
+    setText(val);
+    const detected = detectPaymentMethod(val);
+    if (detected) {
+      setMetodo(detected);
+    }
+  };
+
+  const submit = async (raw: string, overrideMethod?: 'credito' | 'debito' | 'pix' | 'dinheiro') => {
     if (!raw.trim() || isProcessing) return;
     setIsProcessing(true);
+
+    const activeMethod = overrideMethod || metodo;
 
     try {
       const { getAllCategories, saveCustomCategory } = await import('@/lib/categories');
@@ -47,7 +58,8 @@ export default function TransactionInput({ onDone }: Props = {}) {
             valor: aiResult.valor,
             categoria: aiResult.categoria,
             descricao: raw.trim(),
-            data: new Date().toISOString()
+            data: new Date().toISOString(),
+            metodo_pagamento: activeMethod,
           };
           // Salva categoria customizada se for nova
           saveCustomCategory(aiResult.categoria, aiResult.emoji);
@@ -57,6 +69,9 @@ export default function TransactionInput({ onDone }: Props = {}) {
       // Fallback para parser local
       if (!parsed) {
         parsed = parseTransaction(raw);
+        if (parsed) {
+          parsed.metodo_pagamento = activeMethod;
+        }
       }
 
       if (!parsed) {
@@ -85,8 +100,15 @@ export default function TransactionInput({ onDone }: Props = {}) {
     startListening({
       onStart: () => setIsListening(true),
       onResult: (transcript) => {
-        setText(transcript);
-        setTimeout(() => submit(transcript), 300);
+        handleInputChange(transcript);
+        // Tenta detectar o método de pagamento antes do submit
+        const detected = detectPaymentMethod(transcript);
+        const finalMetodo = detected || metodo;
+        
+        // Executa submit
+        setTimeout(() => {
+          submit(transcript, finalMetodo);
+        }, 300);
       },
       onEnd: () => setIsListening(false),
       onError: () => setIsListening(false),
@@ -101,7 +123,7 @@ export default function TransactionInput({ onDone }: Props = {}) {
           type="text"
           autoFocus
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && submit(text)}
           placeholder={isProcessing ? '🧠 O porquinho está pensando...' : isListening ? '🎤 Ouvindo você…' : 'Ex: Comprei pão por 15'}
           disabled={isProcessing}
@@ -133,6 +155,34 @@ export default function TransactionInput({ onDone }: Props = {}) {
             <ArrowRight className="w-4 h-4" />
           )}
         </button>
+      </div>
+
+      {/* Seletor de Método de Pagamento */}
+      <div className="flex flex-col gap-1.5 px-1">
+        <p className="text-[10px] text-muted-foreground font-semibold">
+          Como pagou ou recebeu?
+        </p>
+        <div className="flex gap-2">
+          {([
+            { id: 'debito', label: '💳 Débito' },
+            { id: 'credito', label: '💳 Crédito' },
+            { id: 'pix', label: '📱 Pix' },
+            { id: 'dinheiro', label: '💵 Dinheiro' }
+          ] as const).map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => setMetodo(m.id)}
+              className={`flex-1 py-2 text-center rounded-xl text-[11px] font-semibold border transition-all tap-scale ${
+                metodo === m.id
+                  ? 'border-primary bg-primary/10 text-primary shadow-sm font-bold'
+                  : 'bg-muted/40 text-muted-foreground border-border/30'
+              }`}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Atalhos como chips com emoji */}
